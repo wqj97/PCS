@@ -1,6 +1,6 @@
 # pcs
 
-> price comparison system
+> product comparison system
 
 ## Build Setup
 
