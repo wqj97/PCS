@@ -39,4 +39,20 @@ class Jdquery
             return json_faile('500', '查询失败, 失败原因' . json_encode($result));
         }
     }
+
+    public function List ()
+    {
+        $product_name = input('get.productName', '');
+        $product_id = input('get.productId', 0);
+        $page = input('get.page', 1);
+        $num_result = input('get.num_result', 6);
+        $start = ($page - 1) * $num_result;
+        $is_from_name = $product_name == '';
+        if ($is_from_name) {
+            return Db::query("SELECT * FROM comparision WHERE goods_name LIKE ? LIMIT ?,?", ["%{$product_name}%",
+                $start, $num_result]);
+        } else {
+            return Db::query("SELECT * FROM comparision WHERE P_Id = ? LIMIT ?,?", [$product_id, $start, $num_result]);
+        }
+    }
 }

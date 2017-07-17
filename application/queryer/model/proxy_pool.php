@@ -49,7 +49,7 @@ class proxy_pool extends SpiderSetting
             $this->proxy_pool[] = array_shift($this->freeze_ip);
         }
 
-        $key = random_int(0, count($this->proxy_pool));
+        $key = random_int(0, count($this->proxy_pool) - 1);
 
         return [$this->proxy_pool[$key], $key];
     }

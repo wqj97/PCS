@@ -24,14 +24,9 @@ class UpgradeJD extends SpiderSetting
         ini_set('max_execution_time', 0);
         $queryer = new Jdquery();
         $products = Db::query("SELECT id FROM t_product");
-        $i= 0;
         foreach ($products as $id) {
             $queryer->Search('', $id['id']);
             echo "{$id['id']} has updated<br />";
-            $i++;
-            if ($i == 2) {
-                return;
-            }
         }
 
     }

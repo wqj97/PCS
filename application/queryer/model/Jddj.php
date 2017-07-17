@@ -23,6 +23,9 @@ class Jddj extends Spider
      */
     public function search ($product_name, $product_id = 0, $city = 'Shengzheng')
     {
+        #优化关键词
+        $product_name = $this->optimize_keyWords($product_name);
+
         $response = $this->make_request($product_name, $city);
 
         # 当更换代理次数超过上限的时候
@@ -54,7 +57,6 @@ class Jddj extends Spider
         # 当京东到家给出提示词的时候, 返回空列表
         if (!empty($response->result->promptWord)) return [null];
 
-        Debug::dump($response);
         $list = $response->result->storeSkuList;
 
         foreach ($list as $store) {
@@ -82,8 +84,6 @@ class Jddj extends Spider
      */
     protected function make_request ($product_name = '', $city)
     {
-
-        $product_name = $this->optimize_keyWords($product_name);
         $position = $this->getPosition($city);
 
         $body = [
@@ -106,7 +106,7 @@ class Jddj extends Spider
             "body" => json_encode($body)
         ];
 
-        return parent::request($data, $this->config['Jddj']->url);
+        return $this->request($data, $this->config['Jddj']->url);
 
     }
 }
