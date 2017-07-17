@@ -33,7 +33,11 @@ class Jddj extends Spider
         $result = $this->parse($response->result->storeSkuList, $city);
 
         # 持久化储存
-        $this->save_into_db($result, $product_id);
+        if ($product_id != 0) {
+            $this->save_into_db($result, $product_id);
+        } else {
+            $this->save_into_db($result, 0, $product_name);
+        }
 
         return $result;
     }

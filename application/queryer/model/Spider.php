@@ -65,12 +65,19 @@ class Spider extends SpiderSetting
      * 将爬取的结果存到数据库
      * @param $result array 爬取结果
      * @param $id int 本地商品Id
+     * @param $keyWord string 关键词
      */
-    protected function save_into_db ($result, $id)
+    protected function save_into_db ($result, $id = 0, $keyWord = '')
     {
         $encoded = json_encode($result);
-        $last_update_time = Db::query("SELECT unix_timestamp(P_last_update) AS 'last_update_time' FROM product_comparison WHERE P_Id = ?",
-            [$id]);
+        $from_id = $id != 0;
+        if ($from_id) {
+            $last_update_time = Db::query("SELECT unix_timestamp(P_last_update) AS 'last_update_time' FROM product_comparison WHERE P_Id = ?",
+                [$id]);
+        } else {
+            $last_update_time = Db::query("SELECT unix_timestamp(P_last_update) AS 'last_update_time' FROM product_comparison WHERE P_keyWord = ?",
+                [$keyWord]);
+        }
         if (empty($last_update_time)) {
             $last_update_time = 0;
         } else {
@@ -79,7 +86,11 @@ class Spider extends SpiderSetting
         if ($last_update_time + $this->config['auto_update_frequency'] > time()) {
             return;
         }
-        Db::execute("INSERT INTO `product_comparison` (P_Id, P_Jddj_info) VALUES (?,?)", [$id, $encoded]);
+        if ($from_id) {
+            Db::execute("INSERT INTO `product_comparison` (P_Id, P_Jddj_info) VALUES (?,?)", [$id, $encoded]);
+        } else {
+            Db::execute("INSERT INTO `product_comparison` (P_keyWord, P_Jddj_info) VALUES (?,?)", [$keyWord, $encoded]);
+        }
     }
 
     /**
