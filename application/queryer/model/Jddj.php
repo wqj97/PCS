@@ -8,6 +8,8 @@
 
 namespace app\queryer\model;
 
+use think\Debug;
+
 class Jddj extends Spider
 {
 
@@ -26,11 +28,8 @@ class Jddj extends Spider
         # 当更换代理次数超过上限的时候
         if ($response == false) return false;
 
-        # 当京东到家给出提示词的时候, 返回空列表
-        if (!empty($response->result->promptWord)) return [null];
-
         # 讲结果转化为商店的形式
-        $result = $this->parse($response->result->storeSkuList, $city);
+        $result = $this->parse($response, $city);
 
         # 持久化储存
         if ($product_id != 0) {
@@ -44,13 +43,20 @@ class Jddj extends Spider
 
     /**
      * 解析搜索结果
-     * @param $list
+     * @param mixed $response request传来的结果
      * @param $city
      * @return array
      */
-    private function parse ($list, $city)
+    protected function parse ($response, $city)
     {
         $stores = [];
+
+        # 当京东到家给出提示词的时候, 返回空列表
+        if (!empty($response->result->promptWord)) return [null];
+
+        Debug::dump($response);
+        $list = $response->result->storeSkuList;
+
         foreach ($list as $store) {
             $item = $store->skuList;
             $store = new Store($item[0]->storeName, $city);
@@ -60,9 +66,11 @@ class Jddj extends Spider
             }
             $stores[] = $store;
         }
+
         if (empty($stores)) {
             return [null];
         }
+
         return $stores;
     }
 
@@ -75,6 +83,7 @@ class Jddj extends Spider
     protected function make_request ($product_name = '', $city)
     {
 
+        $product_name = $this->optimize_keyWords($product_name);
         $position = $this->getPosition($city);
 
         $body = [
