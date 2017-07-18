@@ -36,9 +36,9 @@ class Jddj extends Spider
 
         # 持久化储存
         if ($product_id != 0) {
-            $this->save_into_db($result, $product_id);
+            $this->save_into_db($result, $product_id, '', $city);
         } else {
-            $this->save_into_db($result, 0, $product_name);
+            $this->save_into_db($result, 0, $product_name, $city);
         }
 
         return $result;
@@ -57,15 +57,19 @@ class Jddj extends Spider
         # 当京东到家给出提示词的时候, 返回空列表
         if (!empty($response->result->promptWord)) return [null];
 
-        $list = $response->result->storeSkuList;
+        $response = $response->result->storeSkuList;
+        foreach ($response as $storeInfo) {
 
-        foreach ($list as $store) {
-            $item = $store->skuList;
-            $store = new Store($item[0]->storeName, $city);
+            $store_each_info = $storeInfo->store;
 
-            foreach ($item as $product) {
-                $store->addProduct($product->skuName, $product->imgUrl, $product->realTimePrice);
+            $store = new Store($store_each_info->storeName, $store_each_info->logo, $city);
+            $store->addExtraInfo('联系方式', '075529530862');
+            $store->addExtraInfo('开关门时间', '09:00-21:30');
+
+            foreach ($storeInfo->skuList as $item) {
+                $store->addProduct($item->skuName, $item->imgUrl, $item->realTimePrice);
             }
+
             $stores[] = $store;
         }
 
@@ -85,7 +89,6 @@ class Jddj extends Spider
     protected function make_request ($product_name = '', $city)
     {
         $position = $this->getPosition($city);
-
         $body = [
             "longitude" => $position[0],
             "latitude" => $position[1],

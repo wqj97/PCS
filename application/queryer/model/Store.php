@@ -12,12 +12,15 @@ namespace app\queryer\model;
 class Store
 {
     public $store_name;
+    public $store_pic;
     public $products = [];
     public $city;
+    public $extraInfo = [];
 
-    function __construct ($store_name, $city)
+    function __construct ($store_name,$store_pic, $city)
     {
         $this->store_name = $store_name;
+        $this->store_pic = $store_pic;
         $this->city = $city;
     }
 
@@ -34,5 +37,15 @@ class Store
             'product_img' => $product_img,
             'product_price' => $product_price
         ];
+    }
+
+    /**
+     * 添加额外备注信息
+     * @param $info_name string 信息名称
+     * @param $info_content string 信息内容
+     */
+    public function addExtraInfo ($info_name, $info_content)
+    {
+        $this->extraInfo[] = [$info_name => $info_content];
     }
 }

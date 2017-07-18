@@ -1,7 +1,9 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Home from '@/components/Home'
-
+import Console from '@/components/Console'
+import Search from '@/components/Search/Search'
+import SearchByName from '@/components/Search/SearchByName'
+import SearchById from '@/components/Search/SearchById'
 Vue.use(Router)
 
 export default new Router({
@@ -9,7 +11,39 @@ export default new Router({
     {
       path: '/',
       name: 'Home',
-      component: Home
+      component: Console
+    },
+    {
+      path: '/Console',
+      name: 'Console',
+      component: Console
+    },
+    {
+      path: '/Search',
+      name: 'Search',
+      component: Search,
+      children: [
+        {
+          path: 'byName',
+          name: 'SearchByName',
+          component: SearchByName
+        },
+        {
+          path: 'byName/:name',
+          name: 'SearchByNameWithParam',
+          component: SearchByName
+        },
+        {
+          path: 'byId',
+          name: 'SearchByIdWithParam',
+          component: SearchById
+        },
+        {
+          path: 'byId/:id',
+          name: 'SearchById',
+          component: SearchById
+        }
+      ]
     }
   ]
 })

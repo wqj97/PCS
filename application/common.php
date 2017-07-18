@@ -14,3 +14,8 @@ function json_faile ($code = 403, $msg = "缺少参数")
 {
     return json(["result" => $msg], $code);
 }
+
+function json_success ($code = 200, $msg = "成功")
+{
+    return json(["result" => $msg], $code);
+}

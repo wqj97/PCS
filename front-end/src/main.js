@@ -6,7 +6,11 @@ import router from './router/index'
 import vueResource from 'vue-resource'
 import elementUi from 'element-ui'
 import 'element-ui/lib/theme-default/index.css'
+import VueECharts from 'vue-echarts'
+import 'echarts'
+import store from './store'
 
+Vue.component('chart', VueECharts)
 Vue.config.productionTip = false
 Vue.use(vueResource)
 Vue.use(elementUi)
@@ -15,6 +19,7 @@ Vue.use(elementUi)
 new Vue({
   el: '#app',
   router,
+  store,
   template: '<App/>',
   components: {App}
 })
