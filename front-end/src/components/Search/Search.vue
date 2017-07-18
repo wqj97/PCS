@@ -14,13 +14,8 @@
   </div>
 </template>
 <script>
-  import 'echarts'
-  import Echarts from 'vue-echarts/components/ECharts'
   export default {
     name: 'Search',
-    components: {
-      chart: Echarts
-    },
     mounted () {
       this.$store.commit('updateHomeIndex', {homeIndex: '1'})
     },

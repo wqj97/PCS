@@ -29,85 +29,70 @@
         <search-history :history="history" @clicked="search"></search-history>
       </el-col>
     </el-row>
+    <el-row v-if="localInfo.length" class="search-box">
+      <el-col>
+        <el-card class="box-card">
+          <div class="sub-title">
+            星链商品信息
+          </div>
+          <el-collapse>
+            <el-collapse-item v-for="product in localInfo" :key="product" :title="product.goods_name">
+              <p>
+                <span class="sub-title">
+                价格:
+                </span>
+                <span>
+                {{product.price}} (和乐) {{product.weixin_shop_price}} (微信商城)
+                </span>
+              </p>
+              <p>
+                <span class="sub-title">
+                销量:
+                </span>
+                <span>
+                {{product.goods_salenum}}
+                </span>
+              </p>
+              <p>
+                <span class="sub-title">
+                库存:
+              </span>
+                <span>
+                {{product.goods_inventory_original}}
+              </span>
+              </p>
+            </el-collapse-item>
+          </el-collapse>
+        </el-card>
+      </el-col>
+    </el-row>
     <el-row v-loading="loadState">
-      <el-card class="search-box box-card real-time-result">
-        <div class="sub-title">
-          实时数据 (每隔两小时采集一次)
-        </div>
-        <transition-group name="el-fade-in-linear">
-          <el-col :span="24" v-for="(store, index) in results" :key="index" class="search-result">
-            <el-card>
-              <div class="store-info">
-                <div class="left-pic">
-                  <img :src="store.store_pic" class="image">
-                </div>
-                <div class="right-info">
-                  <el-row>
-                    <el-col :span="3" :offset="6">
-                      <span class="sub-title">店名:</span>
-                    </el-col>
-                    <el-col :span="8">
-                      {{store.store_name}}
-                      <span class="store-city">( {{store.city}} )</span>
-                    </el-col>
-                  </el-row>
-                  <template v-for="info in store.extraInfo">
-                    <el-row>
-                      <template v-for="(val, key) in info">
-                        <el-col :span="3" :offset="6">
-                          <span class="sub-title">{{key}}:</span>
-                        </el-col>
-                        <el-col :span="8">
-                          {{val}}
-                        </el-col>
-                      </template>
-                    </el-row>
-                  </template>
-                </div>
-              </div>
-              <div class="products">
-                <el-table
-                    :data="store.products"
-                    style="width: 100%">
-                  <el-table-column
-                      prop="product_name"
-                      label="商品名">
-                  </el-table-column>
-                  <el-table-column
-                      prop="product_price"
-                      label="商品价格 (元)">
-                  </el-table-column>
-                </el-table>
-              </div>
-            </el-card>
-          </el-col>
-        </transition-group>
-      </el-card>
-      <div class="block-control" @click="showMore" @mouseover="showMoreState = true"
-           @mouseout="showMoreState = false"
-           v-if="ShowMore">
-        <i class="el-icon-caret-bottom"></i>
-        <transition name="el-zoom-in-center">
-          <span v-show="showMoreState">显示更多</span>
-        </transition>
-      </div>
+      <real-time-result
+          :results="results"
+          :showMoreState="showMoreState"
+          :ShowMore="ShowMore"
+      ></real-time-result>
     </el-row>
     <el-row v-loading="loadStatePrevious">
       <el-card class="search-box box-card">
         <div class="sub-title">
           历史数据
         </div>
-
+        <history-stat :history="previouslyResults"></history-stat>
       </el-card>
     </el-row>
   </div>
 </template>
 <script>
   import SearchHistory from './SearchHistory.vue'
+  import RealTimeResult from './RealTimeResult.vue'
+  import historyStat from './historyStat.vue'
   export default {
     name: 'SearchByName',
     components: {
-      SearchHistory
+      SearchHistory,
+      RealTimeResult,
+      historyStat
     },
     data () {
       return {
@@ -119,6 +104,7 @@
         },
         results: [],
         previouslyResults: [],
+        localInfo: [],
         showMoreState: false,
         ShowMore: false,
         loadState: false,
@@ -136,10 +122,6 @@
       })
     },
     methods: {
-      showMore () {
-        window.document.querySelector('.real-time-result').className += ' show-full'
-        this.ShowMore = false
-      },
       search (pushHistory) {
         this.loadStateSearch = true
         this.loadStatePrevious = true
@@ -149,16 +131,22 @@
           this.form.productName = pushHistory
         }
         this.form.city.forEach((city, index) => {
+          // 搜索实时信息
           this.$http.post(`/queryer/Jdquery/search`, {
             productName: this.form.productName,
             city: city
           }).then(data => {
             this.loadState = false
+            if (data.body[0] === null) {
+              this.result = []
+              return
+            }
             data.body.forEach(val => {
               this.results.push(val)
               this.ShowMore = true
             })
           })
+          // 搜索历史信息
           this.$http.get('/queryer/Jdquery/List', {
             params: {
               productName: this.form.productName,
@@ -170,78 +158,22 @@
               this.previouslyResults.push(val)
             })
           })
+          // 搜索本地商品信息
+          this.$http.get('/queryer/Jdquery/LocalInfo', {
+            params: {
+              productName: this.form.productName
+            }
+          }).then(data => {
+            this.localInfo = data.body
+          })
         })
       }
     }
   }
 </script>
-<style type="text/scss" lang='scss' scoped>
+<style type="text/scss" lang='scss'>
   .search-box {
     margin: 15px;
   }
 
-  .image {
-    width: 100%;
-    border-radius: 3px;
-    box-shadow: 0 3px 3px rgba(0, 0, 0, 0.4);
-  }
-
-  .store-info {
-    display: flex;
-    margin: 0 0 10px 0;
-    .left-pic {
-      width: 20%;
-    }
-    .right-info {
-      width: 80%;
-      font-size: 14px;
-    }
-    .el-row {
-      margin: 5px 0;
-      .el-col {
-        text-align: right;
-      }
-    }
-  }
-
-  .search-result {
-    margin: 15px 0;
-    box-sizing: content-box;
-  }
-
-  .real-time-result {
-    max-height: 500px;
-    overflow: scroll;
-    position: relative;
-    &::-webkit-scrollbar {
-      width: 5px;
-      height: 0;
-      background: transparent;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: #333;
-      border-radius: 10px;
-    }
-  }
-
-  .block-control {
-    height: 36px;
-    margin: 16px;
-    position: relative;
-    bottom: 51px;
-    border-radius: 0 0 4px 4px;
-    box-sizing: border-box;
-    background-color: #fff;
-    text-align: center;
-    color: #d3dce6;
-    cursor: pointer;
-    z-index: 999;
-    i {
-      margin-top: 7px;
-    }
-  }
-
-  .show-full {
-    max-height: inherit;
-  }
 </style>
