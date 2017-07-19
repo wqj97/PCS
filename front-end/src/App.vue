@@ -7,7 +7,7 @@
       <el-menu-item index="1">
         <router-link to="/Search/byName">价格查询</router-link>
       </el-menu-item>
-      <el-menu-item index="2">行情分析</el-menu-item>
+      <el-menu-item index="2">行情概览</el-menu-item>
       <el-menu-item index="3">活动监听</el-menu-item>
       <el-menu-item index="4">系统设置</el-menu-item>
     </el-menu>
@@ -43,16 +43,28 @@
       display: block;
     }
   }
-  a{
+
+  a {
     color: inherit;
     text-decoration: none;
   }
+
   .el-fade-in-leave-active {
     position: absolute;
   }
+
   .sub-title {
     margin: 10px 0;
     font-size: 14px;
     color: #8492a6;
+  }
+
+  .render-cell {
+    transform: translateZ(0);
+  }
+
+  .el-loading-mask {
+    user-select: none;
+    -webkit-backdrop-filter: blur(10px);
   }
 </style>

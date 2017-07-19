@@ -9,7 +9,7 @@
                 prop="productName"
                 :rules="{ required: true, message: '关键词不能为空'}">
               <el-input
-                  placeholder="请输入关键字"
+                  placeholder="按下 Enter 键搜索"
                   type="search"
                   icon="search"
                   v-model="form.productName"
@@ -26,17 +26,17 @@
         </el-card>
       </el-col>
       <el-col :span="14" class="search-box">
-        <search-history :history="history" @clicked="search"></search-history>
+        <search-history :historyIn="historyIn" @clicked="search"></search-history>
       </el-col>
     </el-row>
-    <el-row v-if="localInfo.length" class="search-box">
+    <el-row v-if="localInfo.length" class="search-box render-cell">
       <el-col>
         <el-card class="box-card">
           <div class="sub-title">
             星链商品信息
           </div>
-          <el-collapse>
-            <el-collapse-item v-for="product in localInfo" :key="product" :title="product.goods_name">
+          <el-collapse class="local-collapse">
+            <el-collapse-item v-for="(product, index) in localInfo" :key="index" :title="product.goods_name">
               <p>
                 <span class="sub-title">
                 价格:
@@ -56,24 +56,25 @@
               <p>
                 <span class="sub-title">
                 库存:
-              </span>
+                </span>
                 <span>
                 {{product.goods_inventory_original}}
               </span>
               </p>
+              <div class="local-image">
+                <img :src="product.logourl" alt="">
+              </div>
             </el-collapse-item>
           </el-collapse>
         </el-card>
       </el-col>
     </el-row>
-    <el-row v-loading="loadState">
+    <el-row v-loading="loadStateSearch" element-loading-text="正在抓取实时信息, 第一次加载耗时较久" class="render-cell">
       <real-time-result
           :results="results"
-          :showMoreState="showMoreState"
-          :ShowMore="ShowMore"
       ></real-time-result>
     </el-row>
-    <el-row v-loading="loadStatePrevious">
+    <el-row v-loading="loadStatePrevious" class="render-cell">
       <el-card class="search-box box-card">
         <div class="sub-title">
           历史数据
@@ -97,7 +98,7 @@
     data () {
       return {
         cities: [],
-        history: [],
+        historyIn: '',
         form: {
           productName: '',
           city: []
@@ -105,9 +106,7 @@
         results: [],
         previouslyResults: [],
         localInfo: [],
-        showMoreState: false,
-        ShowMore: false,
-        loadState: false,
+        loadStateSearch: false,
         loadStatePrevious: false
       }
     },
@@ -122,28 +121,31 @@
       })
     },
     methods: {
-      search (pushHistory) {
+      search () {
         this.loadStateSearch = true
         this.loadStatePrevious = true
-        if (pushHistory instanceof Event) {
-          this.history.push(this.form.productName)
-        } else {
-          this.form.productName = pushHistory
-        }
+        this.results = []
+        this.localInfo = []
+        this.previouslyResults = []
+        this.historyIn = this.form.productName
         this.form.city.forEach((city, index) => {
           // 搜索实时信息
           this.$http.post(`/queryer/Jdquery/search`, {
             productName: this.form.productName,
             city: city
           }).then(data => {
-            this.loadState = false
+            this.loadStateSearch = false
+            this.$notify({
+              title: '成功',
+              message: '搜索成功',
+              type: 'success'
+            })
             if (data.body[0] === null) {
               this.result = []
               return
             }
             data.body.forEach(val => {
               this.results.push(val)
-              this.ShowMore = true
             })
           })
           // 搜索历史信息
@@ -176,4 +178,19 @@
     margin: 15px;
   }
 
+  .el-collapse-item__content {
+    position: relative;
+  }
+
+  .local-image {
+    position: absolute;
+    top: 5px;
+    right:15px;
+    img {
+      right: 5%;
+      border-radius: 4px;
+      box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+      width: 130px;
+    }
+  }
 </style>

@@ -5,7 +5,7 @@
         <el-menu-item
             index="1"><i class="el-icon-menu"></i><router-link to="/Search/byName">关键字查询</router-link></el-menu-item>
         <el-menu-item
-            index="2"><i class="el-icon-date"></i><router-link to="/Search/byId">按本地商品查询</router-link></el-menu-item>
+            index="2"><i class="el-icon-date"></i><router-link to="/Search/byId">按商品查询</router-link></el-menu-item>
       </el-menu>
     </el-col>
     <el-col :span="20">

@@ -4,42 +4,30 @@
       <div class="sub-title">
         实时数据 (每隔两小时采集一次)
       </div>
-      <transition-group name="el-fade-in-linear">
-        <el-col :span="24" v-for="(store, index) in results" :key="index" class="search-result"
-                v-if="results.length != 0">
+      <transition name="el-fade-in-linear" v-if="results.length != 0">
+        <el-col :span="24" class="search-result">
           <el-card>
-            <div class="store-info">
-              <div class="left-pic">
-                <img :src="store.store_pic" class="image">
-              </div>
-              <div class="right-info">
-                <el-row>
-                  <el-col :span="3" :offset="6">
-                    <span class="sub-title">店名:</span>
-                  </el-col>
-                  <el-col :span="8">
-                    {{store.store_name}}
-                    <span class="store-city">( {{store.city}} )</span>
-                  </el-col>
-                </el-row>
-                <template v-for="info in store.extraInfo">
-                  <el-row>
-                    <template v-for="(val, key) in info">
-                      <el-col :span="3" :offset="6">
-                        <span class="sub-title">{{key}}:</span>
-                      </el-col>
-                      <el-col :span="8">
-                        {{val}}
-                      </el-col>
-                    </template>
-                  </el-row>
-                </template>
-              </div>
-            </div>
             <div class="products">
               <el-table
-                  :data="store.products"
+                  :data="products"
                   style="width: 100%">
+                <el-table-column
+                    label="店名"
+                    prop="store_info">
+                  <template scope="store_info">
+                    <el-tooltip placement="right">
+                      <div slot="content">所在城市: {{store_info.row.store_info.city}}
+                        <template v-for="extraInfo in store_info.row.store_info.extraInfo">
+                          <br/>
+                          <template v-for="(val, key) in extraInfo">
+                            {{key}}: {{val}}
+                          </template>
+                        </template>
+                      </div>
+                      <span class="store-name" @click="openStoreInfo(store_info.row.store_info)">{{store_info.row.store_info.store_name}}</span>
+                    </el-tooltip>
+                  </template>
+                </el-table-column>
                 <el-table-column
                     prop="product_name"
                     label="商品名">
@@ -52,16 +40,15 @@
             </div>
           </el-card>
         </el-col>
-        <el-col v-else>
-          <div class="sub-title">
-            暂无数据
-          </div>
-        </el-col>
-      </transition-group>
+      </transition>
+      <el-col v-else>
+        <div class="sub-title">
+          暂时没有结果
+        </div>
+      </el-col>
     </el-card>
     <div class="block-control" @click="showMore" @mouseover="showMoreState = true"
-         @mouseout="showMoreState = false"
-         v-if="ShowMore">
+         @mouseout="showMoreState = false" v-if="ShowMore">
       <i class="el-icon-caret-bottom"></i>
       <transition name="el-zoom-in-center">
         <span v-show="showMoreState">显示更多</span>
@@ -76,18 +63,65 @@
       results: {
         required: true,
         type: Array
-      },
-      showMoreState: {
-        default: false
-      },
-      ShowMore: {
-        default: false
+      }
+    },
+    data () {
+      return {
+        showMoreState: false,
+        opened: false
       }
     },
     methods: {
       showMore () {
         window.document.querySelector('.real-time-result').className += ' show-full'
-        this.ShowMore = false
+        this.opened = true
+      },
+      openStoreInfo (storeInfo) {
+        const h = this.$createElement
+        let extra = []
+        storeInfo.extraInfo.forEach((each) => {
+          extra.push(h('p', null, [h('span', {
+            'class': 'sub-title'
+          }, `${Object.keys(each)[0]}: `),
+            h('span', null, Object.values(each)[0])]))
+        })
+        this.$msgbox({
+          title: storeInfo.store_name,
+          message: h('div', null, [
+            h('p', null, [
+              h('span', {
+                'class': 'sub-title'
+              }, '所在城市: '),
+              h('span', null, storeInfo.city)
+            ]),
+            h('p', {'class': 'store-image'}, [
+              h('img', {
+                attrs: {
+                  src: storeInfo.store_pic
+                }
+              })
+            ]),
+            extra
+          ])
+        })
+      }
+    },
+    computed: {
+      ShowMore () {
+        return this.results.length !== 0 && !this.opened
+      },
+      products () {
+        let products = []
+        this.results.forEach(store => {
+          store.products.forEach(product => {
+            products.push({
+              product_name: product.product_name,
+              product_price: product.product_price,
+              store_info: store
+            })
+          })
+        })
+        return products
       }
     }
   }
@@ -156,6 +190,21 @@
       .el-col {
         text-align: right;
       }
+    }
+  }
+
+  .store-name {
+    color: #1D8CE0;
+    cursor: pointer;
+  }
+  .store-image{
+    position: absolute;
+    right:20px;
+    top:15px;
+    img{
+      width:100px;
+      box-shadow: 0 2px 3px rgba(0,0,0,0.2);
+      border-radius: 2px;
     }
   }
 </style>

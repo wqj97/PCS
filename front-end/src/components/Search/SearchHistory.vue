@@ -17,19 +17,24 @@
   export default {
     name: 'SearchHistory',
     props: {
-      history: {
-        type: Array,
+      historyIn: {
+        type: String,
         require: true
       }
     },
+    data () {
+      return {
+        history: []
+      }
+    },
     mounted () {
-      let storage = JSON.parse(this.$localStorage.get('search_history_by_name'))
+      let storage = JSON.parse(this.$localStorage.get('search_history'))
       if (storage === null) {
         storage = []
       }
       if (storage.length !== 0) {
         storage.forEach(val => {
-          this.history.unshift(val)
+          this.history.push(val)
         })
       }
     },
@@ -43,7 +48,16 @@
     },
     watch: {
       history () {
-        this.$localStorage.set('search_history_by_name', JSON.stringify(this.history))
+        this.$localStorage.set('search_history', JSON.stringify(this.history))
+      },
+      historyIn (newValue) {
+        this.history.forEach((val, key) => {
+          if (val === newValue) {
+            this.history.splice(key, 1)
+          }
+        })
+        console.log(newValue)
+        this.history.push(newValue)
       }
     }
   }

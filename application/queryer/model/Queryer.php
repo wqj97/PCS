@@ -21,8 +21,8 @@ class Queryer
         $num_result = input('get.num_result', 6);
         $city = input('get.city', '深圳');
         $start = ($page - 1) * $num_result;
-        if ($product_name == '') {
-            return Db::query("SELECT P_last_update,goods_name,P_keyWord,P_Jddj_info FROM comparision WHERE P_city = ? AND goods_name LIKE ? LIMIT ?,?", [$city, "%{$product_name}%",
+        if ($product_name != '') {
+            return Db::query("SELECT P_last_update,goods_name,P_keyWord,P_Jddj_info FROM comparision WHERE P_city = ? AND comparision.P_keyWord LIKE ? LIMIT ?,?", [$city, "%{$product_name}%",
                 $start, $num_result]);
         } else {
             return Db::query("SELECT P_last_update,goods_name,P_keyWord,P_Jddj_info FROM comparision WHERE P_city = ? AND P_Id = ? LIMIT ?,?", [$city, $product_id,

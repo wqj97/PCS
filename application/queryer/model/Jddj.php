@@ -63,8 +63,9 @@ class Jddj extends Spider
             $store_each_info = $storeInfo->store;
 
             $store = new Store($store_each_info->storeName, $store_each_info->logo, $city);
-            $store->addExtraInfo('联系方式', '075529530862');
-            $store->addExtraInfo('开关门时间', '09:00-21:30');
+            $store->addExtraInfo('联系方式', $store_each_info->phone);
+            $store->addExtraInfo('开关门时间', $store_each_info->serviceTimes[0]->startTime.' - '
+                .$store_each_info->serviceTimes[0]->endTime);
 
             foreach ($storeInfo->skuList as $item) {
                 $store->addProduct($item->skuName, $item->imgUrl, $item->realTimePrice);
