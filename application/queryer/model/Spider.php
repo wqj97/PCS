@@ -72,10 +72,11 @@ class Spider extends SpiderSetting
         $encoded = json_encode($result);
         $from_id = $id != 0;
         if ($from_id) {
-            $last_update_time = Db::query("SELECT unix_timestamp(P_last_update) AS 'last_update_time' FROM product_comparison WHERE P_Id = ? AND P_city = ?",
+            $last_update_time = Db::query("SELECT unix_timestamp(P_last_update) AS 'last_update_time' FROM product_comparison WHERE P_Id = ? AND P_city = ? 
+ORDER BY P_last_update desc LIMIT 1",
                 [$id, $city]);
         } else {
-            $last_update_time = Db::query("SELECT unix_timestamp(P_last_update) AS 'last_update_time' FROM product_comparison WHERE P_keyWord = ? AND P_city = ?",
+            $last_update_time = Db::query("SELECT unix_timestamp(P_last_update) AS 'last_update_time' FROM product_comparison WHERE P_keyWord = ? AND P_city = ? ORDER BY P_last_update desc LIMIT 1",
                 [$keyWord, $city]);
         }
         if (empty($last_update_time)) {

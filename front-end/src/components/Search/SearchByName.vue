@@ -18,10 +18,10 @@
               </el-input>
             </el-form-item>
             <div class="sub-title">选择需要查询的城市</div>
-            <el-checkbox-group v-model="form.city" fill="#1D8CE0" text-color="#fff" :min="1" :max="4">
-              <el-checkbox-button v-for="(item, index) in cities" :label="index" :key="index">{{index}}
-              </el-checkbox-button>
-            </el-checkbox-group>
+            <el-radio-group v-model="form.city" fill="#1D8CE0" text-color="#fff">
+              <el-radio-button v-for="(item, index) in cities" :label="index" :key="index">{{index}}
+              </el-radio-button>
+            </el-radio-group>
           </el-form>
         </el-card>
       </el-col>
@@ -101,7 +101,7 @@
         historyIn: '',
         form: {
           productName: '',
-          city: []
+          city: ''
         },
         results: [],
         previouslyResults: [],
@@ -117,57 +117,59 @@
         }
       }).then(data => {
         this.cities = data.body
-        this.form.city.push(Object.keys(this.cities)[0])
+        this.form.city = Object.keys(this.cities)[0]
       })
     },
     methods: {
-      search () {
+      search (pushHistory) {
         this.loadStateSearch = true
         this.loadStatePrevious = true
         this.results = []
         this.localInfo = []
         this.previouslyResults = []
-        this.historyIn = this.form.productName
-        this.form.city.forEach((city, index) => {
-          // 搜索实时信息
-          this.$http.post(`/queryer/Jdquery/search`, {
+        console.log()
+        if (typeof pushHistory === 'string') {
+          this.form.productName = pushHistory
+        }
+        let city = this.form.city
+        // 搜索实时信息
+        this.$http.post(`/queryer/Jdquery/search`, {
+          productName: this.form.productName,
+          city: city
+        }).then(data => {
+          this.loadStateSearch = false
+          this.$notify({
+            title: '成功',
+            message: '搜索成功',
+            type: 'success'
+          })
+          if (data.body[0] === null) {
+            this.result = []
+            return
+          }
+          data.body.forEach(val => {
+            this.results.push(val)
+          })
+        })
+        // 搜索历史信息
+        this.$http.get('/queryer/Jdquery/List', {
+          params: {
             productName: this.form.productName,
             city: city
-          }).then(data => {
-            this.loadStateSearch = false
-            this.$notify({
-              title: '成功',
-              message: '搜索成功',
-              type: 'success'
-            })
-            if (data.body[0] === null) {
-              this.result = []
-              return
-            }
-            data.body.forEach(val => {
-              this.results.push(val)
-            })
+          }
+        }).then(data => {
+          this.loadStatePrevious = false
+          data.body.forEach(val => {
+            this.previouslyResults.push(val)
           })
-          // 搜索历史信息
-          this.$http.get('/queryer/Jdquery/List', {
-            params: {
-              productName: this.form.productName,
-              city: city
-            }
-          }).then(data => {
-            this.loadStatePrevious = false
-            data.body.forEach(val => {
-              this.previouslyResults.push(val)
-            })
-          })
-          // 搜索本地商品信息
-          this.$http.get('/queryer/Jdquery/LocalInfo', {
-            params: {
-              productName: this.form.productName
-            }
-          }).then(data => {
-            this.localInfo = data.body
-          })
+        })
+        // 搜索本地商品信息
+        this.$http.get('/queryer/Jdquery/LocalInfo', {
+          params: {
+            productName: this.form.productName
+          }
+        }).then(data => {
+          this.localInfo = data.body
         })
       }
     }
@@ -185,7 +187,7 @@
   .local-image {
     position: absolute;
     top: 5px;
-    right:15px;
+    right: 15px;
     img {
       right: 5%;
       border-radius: 4px;

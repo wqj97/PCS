@@ -1,19 +1,20 @@
 <template>
   <div>
-    <el-row>
-      <el-col v-for="(query, index) in eachQuery" :key="index">
-          <template v-for="store in query.storeInfo">
-            <echarts :options="options(query)"></echarts>
-          </template>
-      </el-col>
-    </el-row>
+    <template v-for="(eachTime, productName, index) in products">
+      <el-row>
+        <el-col>
+          <echarts :options="options(eachTime)"></echarts>
+        </el-col>
+      </el-row>
+
+    </template>
   </div>
 </template>
 <script>
   import 'echarts'
   import Echarts from 'vue-echarts/components/ECharts'
-  import Store from '../model/Store'
-  //  import ecStat from 'echarts-stat'
+  import ecStat from 'echarts-stat'
+
   export default {
     name: 'historyStat',
     components: {
@@ -27,51 +28,117 @@
     },
     data () {
       return {
-        eachQuery: []
+        products: {}
       }
     },
-    computed: {
-      options (query) {
+    methods: {
+      options (eachTime) {
+        let prices = []
+        eachTime.forEach(val => {
+          prices.push([
+            new Date(val.last_update_time).getTime(), val.product_price
+          ])
+        })
+        let myRegression = ecStat.regression('polynomial', prices, 3)
+        console.log(myRegression)
         return {
           backgroundColor: '#2c343c',
+          width: '100%',
           title: {
-            text: query.lastUpdateTime,
+            text: eachTime[0].product_name,
             left: 'center',
             top: 20,
             textStyle: {
               color: '#ccc'
             }
-          }
+          },
+          xAxis: {
+            type: 'value',
+            splitLine: {
+              lineStyle: {
+                type: 'dashed'
+              }
+            }
+          },
+          yAxis: {
+            type: 'value',
+            splitLine: {
+              lineStyle: {
+                type: 'dashed'
+              }
+            }
+          },
+          series: [{
+            name: 'scatter',
+            type: 'scatter',
+            label: {
+              emphasis: {
+                show: true
+              }
+            },
+            data: prices
+          }, {
+            name: 'line',
+            type: 'line',
+            smooth: true,
+            showSymbol: false,
+            data: myRegression.points,
+            markPoint: {
+              itemStyle: {
+                normal: {
+                  color: 'transparent'
+                }
+              },
+              label: {
+                normal: {
+                  show: true,
+                  position: 'left',
+                  formatter: myRegression.expression,
+                  textStyle: {
+                    color: '#333',
+                    fontSize: 14
+                  }
+                }
+              },
+              data: [{
+                coord: myRegression.points[myRegression.points.length - 1]
+              }]
+            }
+          }]
         }
       }
     },
     watch: {
       history () {
-        this.eachQuery = []
+        let productTemp = {}
         this.history.forEach(val => {
           let Jd = JSON.parse(val.P_Jddj_info)
 
           let lastUpdateTime = val.P_last_update
-          let storeInfo = []
-          if (Jd[0] === null) {
-            this.eachQuery.push({
-              lastUpdateTime: lastUpdateTime,
-              storeInfo: storeInfo
-            })
-            return
-          }
+
+          if (Jd[0] === null) return
+
           Jd.forEach(val => {
-            let store = new Store(val.store_name, val.city)
-            val.products.forEach(val => {
-              store.addProduct(val.product_name, val.product_price)
+            val.products.forEach(product => {
+              let productEach = {
+                product_name: product.product_name,
+                product_price: product.product_price,
+                store_info: {
+                  city: val.city,
+                  store_name: val.store_name
+                },
+                last_update_time: lastUpdateTime
+              }
+
+              if (product.product_name in this.products) {
+                productTemp[product.product_name].push(productEach)
+              } else {
+                productTemp[product.product_name] = [productEach]
+              }
             })
-            storeInfo.push(store)
-          })
-          this.eachQuery.push({
-            lastUpdateTime: lastUpdateTime,
-            storeInfo: storeInfo
           })
         })
+        this.products = productTemp
       }
     }
   }
