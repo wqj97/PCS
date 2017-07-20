@@ -45,9 +45,4 @@ class testproxy extends SpiderSetting
         $stable_ip = json_encode($stable_ip);
         Db::execute('UPDATE Spider_setting SET SS_val = ? WHERE SS_key = ?', [$stable_ip, 'proxy_pool']);
     }
-
-    public function getIps ()
-    {
-        return json(Db::query("SELECT SS_val FROM Spider_setting WHERE SS_key = 'proxy_pool'")[0]['SS_val']);
-    }
 }

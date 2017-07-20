@@ -9,7 +9,7 @@
       </el-menu-item>
       <el-menu-item index="2">行情概览</el-menu-item>
       <el-menu-item index="3">活动监听</el-menu-item>
-      <el-menu-item index="4">系统设置</el-menu-item>
+      <el-menu-item index="4"><router-link to="/Setting">系统设置</router-link></el-menu-item>
     </el-menu>
     <transition name="el-fade-in">
       <router-view class="main"></router-view>

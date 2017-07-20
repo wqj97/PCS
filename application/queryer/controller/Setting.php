@@ -11,7 +11,6 @@ namespace app\queryer\controller;
 
 use app\SpiderSetting;
 use think\Db;
-
 class Setting extends SpiderSetting
 {
     public function get ()
@@ -30,5 +29,10 @@ class Setting extends SpiderSetting
         $val = input('post.val');
         Db::query("UPDATE Spider_setting SET SS_val = ? WHERE SS_key = ?", [$key, json_encode($val)]);
         return json_success();
+    }
+
+    public function list ()
+    {
+        return json($this->config);
     }
 }

@@ -4,6 +4,7 @@ import Console from '@/components/Console'
 import Search from '@/components/Search/Search'
 import SearchByName from '@/components/Search/SearchByName'
 import SearchById from '@/components/Search/SearchById'
+import Setting from '@/components/Setting'
 Vue.use(Router)
 
 export default new Router({
@@ -44,6 +45,11 @@ export default new Router({
           component: SearchById
         }
       ]
+    },
+    {
+      path: '/Setting',
+      name: 'Setting',
+      component: Setting
     }
   ]
 })
