@@ -30,57 +30,15 @@
       </el-col>
     </el-row>
     <el-row v-if="localInfo.length" class="search-box render-cell">
-      <el-col>
-        <el-card class="box-card">
-          <div class="sub-title">
-            星链商品信息
-          </div>
-          <el-collapse class="local-collapse">
-            <el-collapse-item v-for="(product, index) in localInfo" :key="index" :title="product.goods_name">
-              <p>
-                <span class="sub-title">
-                价格:
-                </span>
-                <span>
-                {{product.price}} (和乐) {{product.weixin_shop_price}} (微信商城)
-                </span>
-              </p>
-              <p>
-                <span class="sub-title">
-                销量:
-                </span>
-                <span>
-                {{product.goods_salenum}}
-                </span>
-              </p>
-              <p>
-                <span class="sub-title">
-                库存:
-                </span>
-                <span>
-                {{product.goods_inventory_original}}
-              </span>
-              </p>
-              <div class="local-image">
-                <img :src="product.logourl" alt="">
-              </div>
-            </el-collapse-item>
-          </el-collapse>
-        </el-card>
-      </el-col>
+      <search-local-info :localInfo="localInfo"></search-local-info>
     </el-row>
     <el-row v-loading="loadStateSearch" element-loading-text="正在抓取实时信息, 第一次加载耗时较久" class="render-cell">
       <real-time-result
           :results="results"
       ></real-time-result>
     </el-row>
-    <el-row v-loading="loadStatePrevious" class="render-cell">
-      <el-card class="search-box box-card">
-        <div class="sub-title">
-          历史数据
-        </div>
-        <history-stat :history="previouslyResults"></history-stat>
-      </el-card>
+    <el-row v-loading="loadStatePrevious" class="render-cell" >
+        <history-stat :history="previouslyResults" v-if="previouslyResults.length"></history-stat>
     </el-row>
   </div>
 </template>
@@ -88,9 +46,11 @@
   import SearchHistory from './SearchHistory.vue'
   import RealTimeResult from './RealTimeResult.vue'
   import historyStat from './historyStat.vue'
+  import SearchLocalInfo from './SearchLocalInfo.vue'
   export default {
     name: 'SearchByName',
     components: {
+      SearchLocalInfo,
       SearchHistory,
       RealTimeResult,
       historyStat
@@ -127,10 +87,10 @@
         this.results = []
         this.localInfo = []
         this.previouslyResults = []
-        console.log()
         if (typeof pushHistory === 'string') {
           this.form.productName = pushHistory
         }
+        this.historyIn = this.form.productName
         let city = this.form.city
         // 搜索实时信息
         this.$http.post(`/queryer/Jdquery/search`, {
@@ -139,7 +99,7 @@
         }).then(data => {
           this.loadStateSearch = false
           this.$notify({
-            title: '成功',
+            title: '搜索状态',
             message: '搜索成功',
             type: 'success'
           })
@@ -152,7 +112,7 @@
           })
         })
         // 搜索历史信息
-        this.$http.get('/queryer/Jdquery/List', {
+        this.$http.get('/queryer/index/List', {
           params: {
             productName: this.form.productName,
             city: city
@@ -164,7 +124,7 @@
           })
         })
         // 搜索本地商品信息
-        this.$http.get('/queryer/Jdquery/LocalInfo', {
+        this.$http.get('/queryer/index/LocalInfo', {
           params: {
             productName: this.form.productName
           }

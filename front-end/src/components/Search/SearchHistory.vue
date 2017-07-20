@@ -56,7 +56,6 @@
             this.history.splice(key, 1)
           }
         })
-        console.log(newValue)
         this.history.push(newValue)
       }
     }

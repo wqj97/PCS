@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-col :span="4" class="left-menu">
-      <el-menu default-active="1" class="el-menu-vertical-demo">
+      <el-menu :default-active="actived" class="el-menu-vertical-demo">
         <el-menu-item
             index="1"><i class="el-icon-menu"></i><router-link to="/Search/byName">关键字查询</router-link></el-menu-item>
         <el-menu-item
@@ -9,7 +9,7 @@
       </el-menu>
     </el-col>
     <el-col :span="20">
-      <router-view></router-view>
+      <router-view @routerInit="routerInit"></router-view>
     </el-col>
   </div>
 </template>
@@ -21,6 +21,12 @@
     },
     data () {
       return {
+        actived: '1'
+      }
+    },
+    methods: {
+      routerInit (index) {
+        this.actived = index
       }
     }
   }

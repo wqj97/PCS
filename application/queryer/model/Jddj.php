@@ -8,6 +8,7 @@
 
 namespace app\queryer\model;
 
+use think\Db;
 use think\Debug;
 
 class Jddj extends Spider
@@ -90,6 +91,7 @@ class Jddj extends Spider
     protected function make_request ($product_name = '', $city)
     {
         $position = $this->getPosition($city);
+
         $body = [
             "longitude" => $position[0],
             "latitude" => $position[1],
