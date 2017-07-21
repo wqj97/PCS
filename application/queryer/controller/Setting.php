@@ -27,7 +27,8 @@ class Setting extends SpiderSetting
     {
         $key = input('post.key');
         $val = input('post.val');
-        Db::query("UPDATE Spider_setting SET SS_val = ? WHERE SS_key = ?", [$key, json_encode($val)]);
+        Db::query("UPDATE Spider_setting SET SS_val = ? WHERE SS_key = ?", [$val, $key]);
+        $this->flush_setting();
         return json_success();
     }
 
@@ -35,4 +36,5 @@ class Setting extends SpiderSetting
     {
         return json($this->config);
     }
+
 }

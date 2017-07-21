@@ -13,7 +13,15 @@ use think\Debug;
 
 class Jddj extends Spider
 {
-
+    protected $header = [
+        "Host" => 'daojia.jd.com',
+        "Origin" => "https://daojia.jd.com",
+        "Referer" => "https://daojia.jd.com/html/index.html",
+        "User-Agent" => "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1",
+        "Accept" => "application/json",
+        "Content-Type" => "application/x-www-form-urlencoded",
+        "X-Requested-With" => "XMLHttpRequest"
+    ];
 
     /**
      * 通过名称搜索京东到家对应商品

@@ -52,21 +52,32 @@ id = ? AND goods_status = 1", ["$product_id"]);
         }
     }
 
-    public function proxy () {
+    public function proxy ()
+    {
         $proxy_ip = input('post.ip');
         $header = [
             "User-Agent" => "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1",
         ];
+        $startTime = microtime(true);
+        $status = true;
         try {
-            $result = \Requests::post('http://123.206.71.121/ip.php', $header, [], ['proxy' => $proxy_ip])->body;
-            $true_ip = explode(':', $proxy_ip)[0];
-            if ($result != $true_ip) {
-                throw new \Exception('bad proxy');
+            if ($proxy_ip) {
+                $result = \Requests::post('http://123.206.71.121/ip.php', $header, [], ['proxy' => $proxy_ip])->body;
+                $true_ip = explode(':', $proxy_ip)[0];
+                if ($result != $true_ip) {
+                    throw new \Exception('bad proxy');
+                }
+            } else {
+                $result = \Requests::post('http://123.206.71.121/ip.php', $header, [], [])->body;
             }
         } catch (\Exception $e) {
-            echo "<span style='color:red'>error</span><div style='display: inline-block;white-space: nowrap'>";
-            print_r($e->getMessage());
-            echo "</div><br />";
+            $status = false;
+        }
+        $endTime = microtime(true);
+        if ($status) {
+            return json(["result" => "success", "delay" => ($endTime - $startTime) * 1000]);
+        } else {
+            return json(["result" => "failed"]);
         }
     }
 }

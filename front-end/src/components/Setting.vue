@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-loading.fullscreen.lock="fullscreenLoading">
     <el-row>
       <el-col :span="5">
         <el-card class="box-card">
@@ -23,61 +23,164 @@
           </el-card>
         </el-col>
       </transition>
-    </el-row>
-    <el-row>
-      <el-card class="box-card" style="display: inline-block">
-        <div class="sub-title">系统只会从已选中的数据源中获取数据</div>
-        <el-checkbox-group v-model="openedSpider" size="large" fill="#324057" text-color="#fbf42a" :min="1">
-          <el-checkbox-button v-for="spider in spiderList" :label="spider.key" :disabled="spider.disabled"
-                              :key="spider.key">
-            {{spider.label}}
-          </el-checkbox-button>
-        </el-checkbox-group>
-      </el-card>
-    </el-row>
-    <el-row>
       <el-col :span="10">
-        <el-card class="box-card" style="display: inline-block">
-          <div class="sub-title">代理池</div>
-          <el-transfer v-model="proxyPoolFreezed" :data="proxyPool" :titles="['正在使用的代理','停止使用的代理']"></el-transfer>
+        <el-card class="box-card">
+          <span class="sub-title">
+            代理池延迟 (时间越长代理越稳定, 但整体访问速度越慢):
+          </span>
+          <el-input-number v-model="proxyDelay" :min="0" :step="0.1" :max="2"></el-input-number>
         </el-card>
       </el-col>
-      <el-col :span="14">
-        <el-card class="box-card" style="height: 400px;">
-          <div class="sub-title">代理测速:
-            <el-button type="danger" @click="startTesting">开始测速</el-button>
+    </el-row>
+    <el-row type="flex" justify="space-between">
+      <el-col>
+        <el-card class="box-card" style="display: inline-block">
+          <div class="sub-title">系统只会从已选中的数据源中获取数据</div>
+          <el-checkbox-group v-model="openedSpider" size="large" fill="#324057" text-color="#fbf42a" :min="1">
+            <el-checkbox-button v-for="spider in spiderList" :label="spider.key" :disabled="spider.disabled"
+                                :key="spider.key">
+              {{spider.label}}
+            </el-checkbox-button>
+          </el-checkbox-group>
+        </el-card>
+      </el-col>
+      <el-col>
+        <el-card class="box-card">
+          <div class="sub-title">京东到家设置</div>
+          <el-form :model="Jddj" :rules="spiderOptionCheck">
+            <el-form-item label="名称" prop="option">
+              <el-input
+                  type="textarea"
+                  autosize
+                  size="large"
+                  v-model="Jddj.option">
+              </el-input>
+            </el-form-item>
+
+          </el-form>
+        </el-card>
+      </el-col>
+    </el-row>
+    <el-row>
+      <el-col :span="11">
+        <el-card class="box-card" style="display: inline-block">
+          <div class="sub-title">代理池
+            <el-button @click="testingBlock = !testingBlock" type="primary">快速测试 >></el-button>
           </div>
+          <el-transfer v-model="proxyPoolFreezed" :data="proxyPool" :titles="['正在使用的代理','停止使用的代理']"></el-transfer>
           <div class="sub-title">
-            <el-progress :text-inside="true" :stroke-width="18" :percentage="ProxyTestPercentage"
-                         v-show="ProxyTestPercentage"></el-progress>
+            <el-button type="primary" @click="saveProxyPool">保存</el-button>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="13" v-if="testingBlock">
+        <el-card class="box-card" style="height: 455px;">
+          <el-row type="flex" justify="space-between">
+            <el-col>
+              <span class="sub-title">代理测速:</span>
+              <el-button type="danger" @click="startTesting">开始测速</el-button>
+            </el-col>
+            <el-col v-if="proxyTestPercentage">
+              <span class="sub-title">移除不可用的代理:</span>
+              <el-button type="danger" @click="dialogFormVisible = true">点击移除</el-button>
+              <el-dialog title="停用延迟高于设定的代理" :visible.sync="dialogFormVisible">
+                <div class="sub-title">
+                  当设定值为0时, 只移除失效的代理
+                </div>
+                <el-slider v-model="delaySetting" :step="100" :min="0" :max="5000" show-input></el-slider>
+                <div slot="footer" class="dialog-footer">
+                  <el-button @click="dialogFormVisible = false">取 消</el-button>
+                  <el-button type="primary" @click="removeLowProxy">确 定</el-button>
+                </div>
+              </el-dialog>
+            </el-col>
+          </el-row>
+          <div class="sub-title">
+            <el-progress :text-inside="true" :stroke-width="18" :percentage="Math.ceil(proxyTestPercentage)"
+                         v-show="proxyTestPercentage"></el-progress>
           </div>
           <el-table
               :data="proxyPool"
-              height="275"
+              height="340"
               style="width: 100%">
             <el-table-column
                 prop="label"
                 label="地址">
             </el-table-column>
             <el-table-column
-                prop="address"
+                prop="delay"
+                sortable
                 label="延迟">
+              <template scope="delay">
+                <span class="low-delay" :class="{'hight-delay': isHeight(delay.row.delay)}">{{delay.row.delay}}</span>
+              </template>
             </el-table-column>
           </el-table>
         </el-card>
       </el-col>
     </el-row>
+    <el-row>
+      <el-card class="box-card">
+        <div class="sub-title">系统只会允许从下列地区获取信息</div>
+        <template v-for="city in cities">
+          <el-col :span="12">
+            <el-card style="display: inline-block" class="box-card">
+              <el-form :model="city" :rules="cityRules" label-width="100px" class="demo-ruleForm">
+                <el-form-item label="城市名称" prop="label">
+                  <el-input v-model="city.label"></el-input>
+                </el-form-item>
+                <el-form-item label="城市经度" prop="latitude">
+                  <el-input v-model="city.latitude"></el-input>
+                </el-form-item>
+                <el-form-item label="城市纬度" prop="longitude">
+                  <el-input v-model="city.longitude"></el-input>
+                </el-form-item>
+                <el-form-item label="对应城市Id" prop="cityId">
+                  <el-input v-for="(val, key, index) in city.cityId" :key="index" v-model="city.cityId[key]">
+                    <template slot="prepend">{{spiderList[index].label}}</template>
+                  </el-input>
+                </el-form-item>
+              </el-form>
+            </el-card>
+          </el-col>
+        </template>
+      </el-card>
+    </el-row>
   </div>
 </template>
 <script>
+  import _ from 'lodash'
+
   export default {
     name: 'Setting',
     data () {
+      let JSONcheck = (rule, value, cb) => {
+        if (this.startCheck === false) {
+          this.startCheck = true
+          return
+        }
+        clearTimeout(this.timeout)
+        this.timeout = setTimeout(() => {
+          try {
+            JSON.parse(value)
+          } catch (err) {
+            cb(new Error(err))
+            return
+          }
+          this.saveSetting('Jddj', JSON.stringify(JSON.parse(value)))
+        }, 500)
+      }
       return {
         autoUpdate: true,
+        fullscreenLoading: true,
         autoUpdateFrequency: 2,
         openedSpider: [],
-        ProxyTestPercentage: 0,
+        proxyTestPercentage: 0,
+        proxyDelay: 0.1,
+        testingBlock: false,
+        Jddj: {
+          option: ''
+        },
         spiderList: [
           {
             label: '京东到家',
@@ -99,13 +202,38 @@
             disabled: true
           }
         ],
+        cities: [],
+        dialogFormVisible: false,
+        delaySetting: 0,
         proxyPool: [],
-        proxyPoolFreezed: []
+        proxyPoolFreezed: [],
+        cityRules: {
+          label: {
+            required: true,
+            message: '必须输入城市名'
+          },
+          latitude: {
+            required: true,
+            message: '必须输入经度'
+          },
+          longitude: {
+            required: true,
+            message: '必须输入纬度'
+          }
+        },
+        timeout: '',
+        startCheck: false,
+        spiderOptionCheck: {
+          option: [{
+            validator: JSONcheck
+          }]
+        }
       }
     },
-    mounted () {
+    mounted: function () {
       this.$store.commit('updateHomeIndex', {homeIndex: '4'})
       this.$http.get('/queryer/setting/list').then(data => {
+        this.fullscreenLoading = false
         // 代理池
         data.body.proxy_pool.forEach(val => {
           this.proxyPool.push({
@@ -115,19 +243,120 @@
         })
         data.body.proxy_pool_freezed.forEach(val => {
           this.proxyPoolFreezed.push(val)
+          this.proxyPool.push({label: val, key: val})
         })
+        this.proxyDelay = data.body.proxy_sleep
         // 启动的爬虫
         this.openedSpider = data.body.opened_spider
+        // 京东到家
+        this.Jddj.option = JSON.stringify(data.body.Jddj, null, 8)
         // 自动更新
         this.autoUpdate = Boolean(data.body.auto_update)
         this.autoUpdateFrequency = data.body.auto_update_frequency / 3600
+        // 城市
+        _.forIn(data.body.city, (val, key) => {
+          this.cities.push({
+            label: key,
+            longitude: val[0],
+            latitude: val[1],
+            cityId: {
+              Jddj: val[2][0],
+              Tm: val[2][1],
+              Tb: val[2][2],
+              Sdg: val[2][3]
+            }
+          })
+        })
+        this.$watch('cities', this.saveCities, {
+          deep: true
+        })
       })
     },
     methods: {
-      startTesting () {
-        this.proxyPool.forEach(ip => {
-          console.log(ip)
+      saveSetting (key, val) {
+        this.$http.post('/queryer/setting/set', {
+          key: key,
+          val: val
+        }).then(data => {
+          if (data.status === 200) {
+            this.$notify({
+              title: '成功',
+              message: '设置保存成功',
+              type: 'success'
+            })
+          }
         })
+      },
+      saveCities () {
+        let setting = {}
+        _.forIn(this.cities, val => {
+          setting[val.label] = []
+          setting[val.label][0] = val.longitude
+          setting[val.label][1] = val.latitude
+          setting[val.label][2] = [val.cityId['Jddj'], val.cityId['Tm'], val.cityId['Tb'], val.cityId['Sdg']]
+        })
+        clearTimeout(this.timeout)
+        this.timeout = setTimeout(() => {
+          this.saveSetting('city', JSON.stringify(setting))
+        }, 2000)
+      },
+      startTesting () {
+        this.proxyPool.forEach((ip, key) => {
+          this.$http.post('/queryer/index/proxy', {
+            ip: ip.key
+          }).then(data => {
+            this.percentageIncrese()
+            if (data.body.result === 'success') {
+              this.$set(this.proxyPool, key, {label: ip.label, key: ip.key, delay: data.body.delay})
+            } else {
+              this.$set(this.proxyPool, key, {label: ip.label, key: ip.key, delay: 'Failed'})
+            }
+          })
+        })
+      },
+      removeLowProxy () {
+        this.dialogFormVisible = false
+        this.proxyPool.forEach((val, key) => {
+          if (val.delay === 'Failed') {
+            this.proxyPoolFreezed.push(this.proxyPool[key].key)
+          } else if (this.delaySetting === 0) {
+            return
+          } else if (val.delay > this.delaySetting) {
+            this.proxyPoolFreezed.push(this.proxyPool[key].key)
+          }
+        })
+      },
+      percentageIncrese () {
+        this.proxyTestPercentage += 100 / this.proxyPool.length
+      },
+      isHeight (delay) {
+        if (typeof delay === 'string') {
+          return true
+        }
+        return delay > 500
+      },
+      saveProxyPool () {
+        let proxyPool = []
+        this.proxyPool.forEach(val => {
+          proxyPool.push(val.key)
+        })
+        proxyPool = _.difference(proxyPool, this.proxyPoolFreezed)
+        this.saveSetting('proxy_pool', JSON.stringify(proxyPool))
+        this.saveSetting('proxy_pool_freezed', JSON.stringify(this.proxyPoolFreezed))
+      }
+    },
+    watch: {
+      autoUpdate (newValue) {
+        this.saveSetting('auto_update', Number(newValue))
+      },
+      autoUpdateFrequency (newValue) {
+        this.saveSetting('auto_update_frequency', newValue * 3600)
+      },
+      proxyDelay (newValue) {
+        clearTimeout(this.timeout)
+        this.timeout = setTimeout(() => {
+          this.saveSetting('proxy_sleep', newValue)
+        }, 500)
       }
     }
   }
@@ -139,5 +368,13 @@
 
   .sub-title {
     margin-right: 20px;
+  }
+
+  .low-delay {
+    color: #34ff3a;
+  }
+
+  .hight-delay {
+    color: #ff4834;
   }
 </style>
