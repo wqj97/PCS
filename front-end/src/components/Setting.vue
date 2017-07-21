@@ -65,7 +65,8 @@
       <el-col :span="11">
         <el-card class="box-card" style="display: inline-block">
           <div class="sub-title">代理池
-            <el-button @click="testingBlock = !testingBlock" type="primary">快速测试 >></el-button>
+            <el-button @click="addIp" type="success" icon="plus">手工添加代理</el-button>
+            <el-button @click="testingBlock = !testingBlock" type="primary" icon="d-arrow-right">快速测试</el-button>
           </div>
           <el-transfer v-model="proxyPoolFreezed" :data="proxyPool" :titles="['正在使用的代理','停止使用的代理']"></el-transfer>
           <div class="sub-title">
@@ -73,61 +74,96 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="13" v-if="testingBlock">
-        <el-card class="box-card" style="height: 455px;">
-          <el-row type="flex" justify="space-between">
-            <el-col>
-              <span class="sub-title">代理测速:</span>
-              <!--TODO: 加入手工添加代理功能 -->
-              <el-button type="danger" @click="startTesting">开始测速</el-button>
-            </el-col>
-            <el-col v-if="proxyTestPercentage">
-              <span class="sub-title">移除不可用的代理:</span>
-              <el-button type="danger" @click="dialogFormVisible = true">点击移除</el-button>
-              <el-dialog title="停用延迟高于设定的代理" :visible.sync="dialogFormVisible">
-                <div class="sub-title">
-                  当设定值为0时, 只移除失效的代理
-                </div>
-                <el-slider v-model="delaySetting" :step="100" :min="0" :max="5000" show-input></el-slider>
-                <div slot="footer" class="dialog-footer">
-                  <el-button @click="dialogFormVisible = false">取 消</el-button>
-                  <el-button type="primary" @click="removeLowProxy">确 定</el-button>
-                </div>
-              </el-dialog>
-            </el-col>
-          </el-row>
-          <div class="sub-title">
-            <el-progress :text-inside="true" :stroke-width="18" :percentage="Math.ceil(proxyTestPercentage)"
-                         v-show="proxyTestPercentage"></el-progress>
-          </div>
-          <el-table
-              :data="proxyPool"
-              height="340"
-              style="width: 100%">
-            <el-table-column
-                prop="label"
-                label="地址">
-            </el-table-column>
-            <el-table-column
-                prop="delay"
-                sortable
-                label="延迟">
-              <template scope="delay">
-                <span class="low-delay" :class="{'hight-delay': isHeight(delay.row.delay)}">{{delay.row.delay}}</span>
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-card>
-      </el-col>
+      <transition name="el-fade-in-linear">
+        <el-col :span="13" v-if="testingBlock">
+          <el-card class="box-card" style="height: 455px">
+            <el-row type="flex" justify="space-between">
+              <el-col>
+                <span class="sub-title">代理测速:</span>
+                <el-button type="danger" @click="startTesting">开始测速</el-button>
+              </el-col>
+              <el-col v-if="proxyTestPercentage">
+                <span class="sub-title">移除不可用的代理:</span>
+                <el-button type="danger" @click="dialogFormVisible = true">点击移除</el-button>
+                <el-dialog title="停用延迟高于设定的代理" :visible.sync="dialogFormVisible">
+                  <div class="sub-title">
+                    当设定值为0时, 只移除失效的代理
+                  </div>
+                  <el-slider v-model="delaySetting" :step="100" :min="0" :max="5000" show-input></el-slider>
+                  <div slot="footer" class="dialog-footer">
+                    <el-button @click="dialogFormVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="removeLowProxy">确 定</el-button>
+                  </div>
+                </el-dialog>
+              </el-col>
+            </el-row>
+            <div class="sub-title">
+              <el-progress :text-inside="true" :stroke-width="18" :percentage="Math.ceil(proxyTestPercentage)"
+                           v-show="proxyTestPercentage"></el-progress>
+            </div>
+            <el-table
+                :data="proxyPool"
+                height="340"
+                style="width: 100%">
+              <el-table-column
+                  prop="label"
+                  label="地址">
+              </el-table-column>
+              <el-table-column
+                  prop="delay"
+                  sortable
+                  label="延迟">
+                <template scope="delay">
+                  <span class="low-delay" :class="{'hight-delay': isHeight(delay.row.delay)}">{{delay.row.delay}}</span>
+                </template>
+              </el-table-column>
+            </el-table>
+          </el-card>
+        </el-col>
+      </transition>
     </el-row>
     <el-row>
       <el-card class="box-card">
-        <div class="sub-title">系统只会允许从下列地区获取信息</div>
-        <!--TODO: 加入手工添加位置功能 -->
-
-        <template v-for="city in cities">
+        <div class="sub-title">系统只会允许从下列地区获取信息:
+          <el-button type="success" @click="newPositionDialog = true">添加位置
+          </el-button>
+        </div>
+        <el-dialog title="添加位置" :visible.sync="newPositionDialog">
+          <el-form :model="newPosition">
+            <el-form-item label="位置名称">
+              <el-input v-model="newPosition.label"></el-input>
+            </el-form-item>
+            <el-form-item label="位置经纬度">
+              <el-input v-model="newPosition.longitude">
+                <template slot="prepend">经度</template>
+              </el-input>
+              <el-input v-model="newPosition.latitude">
+                <template slot="prepend">纬度</template>
+              </el-input>
+            </el-form-item>
+            <el-form-item label="对应城市Id">
+              <el-input v-model="newPosition.cityId.Jddj">
+                <template slot="prepend">京东到家</template>
+              </el-input>
+              <el-input v-model="newPosition.cityId.Tm">
+                <template slot="prepend">天猫超市</template>
+              </el-input>
+              <el-input v-model="newPosition.cityId.Tb">
+                <template slot="prepend">淘宝</template>
+              </el-input>
+              <el-input v-model="newPosition.cityId.Sdg">
+                <template slot="prepend">闪电购</template>
+              </el-input>
+            </el-form-item>
+          </el-form>
+          <div slot="footer" class="dialog-footer">
+            <el-button @click="newPositionDialog = false">取 消</el-button>
+            <el-button type="primary" @click="addPosition">确 定</el-button>
+          </div>
+        </el-dialog>
+        <template v-for="(city, index) in cities">
           <el-col :span="12">
-            <el-card style="display: inline-block" class="box-card">
+            <el-card style="display: inline-block" class="box-card position-card">
               <el-form :model="city" :rules="cityRules" label-width="100px" class="demo-ruleForm">
                 <el-form-item label="城市名称" prop="label">
                   <el-input v-model="city.label"></el-input>
@@ -144,6 +180,7 @@
                   </el-input>
                 </el-form-item>
               </el-form>
+              <i class="el-icon-circle-close remove-icon" @click="addCity(index)"></i>
             </el-card>
           </el-col>
         </template>
@@ -206,6 +243,18 @@
           }
         ],
         cities: [],
+        newPosition: {
+          label: '',
+          latitude: '',
+          longitude: '',
+          cityId: {
+            Jddj: '',
+            Tm: '',
+            Tb: '',
+            Sdg: ''
+          }
+        },
+        newPositionDialog: false,
         dialogFormVisible: false,
         delaySetting: 0,
         proxyPool: [],
@@ -233,7 +282,7 @@
         }
       }
     },
-    mounted: function () {
+    mounted () {
       this.$store.commit('updateHomeIndex', {homeIndex: '4'})
       this.$http.get('/queryer/setting/list').then(data => {
         this.fullscreenLoading = false
@@ -303,6 +352,65 @@
           this.saveSetting('city', JSON.stringify(setting))
         }, 2000)
       },
+      addIp () {
+        this.$prompt('请输入一个有效的Ip地址', '提示', {
+          confirmButtonText: '自动验证',
+          cancelButtonText: '取消',
+          inputPattern: /\d+\.\d+\.\d+\.\d+:\d+/,
+          inputErrorMessage: '代理格式不正确, 正确示例: 127.0.0.1:8080'
+        }).then(({value}) => {
+          let proxyPool = this.proxyPool.map(val => {
+            return val.label
+          })
+          if (_.intersection(proxyPool, [value]).length !== 0) {
+            this.$message({
+              type: 'error',
+              message: 'Ip: ' + value + ' 已经存在于代理池中, 无需再次添加'
+            })
+            return
+          }
+          this.$http.post('/queryer/index/proxy', {
+            ip: value
+          }).then(data => {
+            if (data.body.result === 'success') {
+              this.proxyPool.push({
+                label: value,
+                key: value,
+                dalay: data.body.delay
+              })
+              this.$message({
+                type: 'success',
+                message: 'Ip: ' + value + ' 添加成功, 延迟: ' + data.body.delay + 'ms'
+              })
+            } else {
+              this.$message({
+                type: 'error',
+                message: 'Ip: ' + value + ' 添加失败, 代理无法使用, 或者返回了异常结果'
+              })
+            }
+          })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '取消添加'
+          })
+        })
+      },
+      addPosition () {
+        this.newPositionDialog = false
+        this.cities.push(this.newPosition)
+        this.newPosition = {
+          label: '',
+          latitude: '',
+          longitude: '',
+          cityId: {
+            Jddj: '',
+            Tm: '',
+            Tb: '',
+            Sdg: ''
+          }
+        }
+      },
       startTesting () {
         this.proxyPool.forEach((ip, key) => {
           this.$http.post('/queryer/index/proxy', {
@@ -346,6 +454,11 @@
         proxyPool = _.difference(proxyPool, this.proxyPoolFreezed)
         this.saveSetting('proxy_pool', JSON.stringify(proxyPool))
         this.saveSetting('proxy_pool_freezed', JSON.stringify(this.proxyPoolFreezed))
+      },
+      addCity (index) {
+        this.$confirm(`确认删除${this.cities[index].label}吗`).then(() => {
+          this.cities.splice(index, 1)
+        })
       }
     },
     watch: {
@@ -367,17 +480,29 @@
 <style type='css/scss' lang='scss' scoped>
   .box-card {
     margin: 15px;
+    position: relative;
+  }
+
+  .position-card {
+    padding-top: 15px;
   }
 
   .sub-title {
-    margin-right: 20px;
+    margin-right: 20px
   }
 
   .low-delay {
-    color: #34ff3a;
+    color: #34ff3a
   }
 
   .hight-delay {
-    color: #ff4834;
+    color: #ff4834
+  }
+
+  .remove-icon {
+    position: absolute;
+    top: 15px;
+    cursor: pointer;
+    z-index: 999;
   }
 </style>
