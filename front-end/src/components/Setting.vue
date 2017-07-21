@@ -78,6 +78,7 @@
           <el-row type="flex" justify="space-between">
             <el-col>
               <span class="sub-title">代理测速:</span>
+              <!--TODO: 加入手工添加代理功能 -->
               <el-button type="danger" @click="startTesting">开始测速</el-button>
             </el-col>
             <el-col v-if="proxyTestPercentage">
@@ -122,6 +123,8 @@
     <el-row>
       <el-card class="box-card">
         <div class="sub-title">系统只会允许从下列地区获取信息</div>
+        <!--TODO: 加入手工添加位置功能 -->
+
         <template v-for="city in cities">
           <el-col :span="12">
             <el-card style="display: inline-block" class="box-card">
