@@ -77,7 +77,8 @@ class Jddj extends Spider
                 .$store_each_info->serviceTimes[0]->endTime);
 
             foreach ($storeInfo->skuList as $item) {
-                $store->addProduct($item->skuName, $item->imgUrl, $item->realTimePrice);
+                $product_url = $this->config['jddj']->baseUrl."#storeHome/skuId:{$item->skuId}/storeId:{$storeInfo->storeId}/orgCode:{$storeInfo->orgCode}/fromAnchor:true/promotionType:/activityId:/LID:1";
+                $store->addProduct($item->skuName, $item->imgUrl, $item->realTimePrice, $product_url);
             }
 
             $stores[] = $store;
@@ -98,7 +99,7 @@ class Jddj extends Spider
      */
     protected function make_request ($product_name = '', $city)
     {
-        $position = $this->getPosition($city);
+        $position = $this->getPosition($city,'Jddj');
 
         $body = [
             "longitude" => $position[0],

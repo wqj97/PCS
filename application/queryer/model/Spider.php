@@ -12,6 +12,7 @@ namespace app\queryer\model;
 use app\SpiderSetting;
 use Requests;
 use think\Db;
+use think\Debug;
 use think\Exception;
 use think\Log;
 
@@ -32,9 +33,23 @@ class Spider extends SpiderSetting
      * @param string $city 城市名
      * @return array 1.经度 2.纬度 3.城市Id
      */
-    protected function getPosition ($city = '深圳')
+    protected function getPosition ($city = '深圳', $type)
     {
-        return $this->config['city']->$city;
+        switch ($type) {
+            case 'Jddj':
+                $type = 0;
+                break;
+            case 'Tm':
+                $type = 1;
+                break;
+            case 'Tb':
+                $type = 2;
+                break;
+            case 'Sdg':
+                $type = 3;
+                break;
+        }
+        return $this->config['city']->$city[$type];
     }
 
     /**
@@ -65,10 +80,10 @@ class Spider extends SpiderSetting
         $from_id = $id != 0;
         if ($from_id) {
             $last_update_time = Db::query("SELECT unix_timestamp(P_last_update) AS 'last_update_time' FROM product_comparison WHERE P_Id = ? AND P_city = ? 
-ORDER BY P_last_update desc LIMIT 1",
+ORDER BY P_last_update DESC LIMIT 1",
                 [$id, $city]);
         } else {
-            $last_update_time = Db::query("SELECT unix_timestamp(P_last_update) AS 'last_update_time' FROM product_comparison WHERE P_keyWord = ? AND P_city = ? ORDER BY P_last_update desc LIMIT 1",
+            $last_update_time = Db::query("SELECT unix_timestamp(P_last_update) AS 'last_update_time' FROM product_comparison WHERE P_keyWord = ? AND P_city = ? ORDER BY P_last_update DESC LIMIT 1",
                 [$keyWord, $city]);
         }
         if (empty($last_update_time)) {
@@ -102,18 +117,19 @@ ORDER BY P_last_update desc LIMIT 1",
         }
         for ($i = 0; $i < $this->config['retry_times']; $i++) {
             $option = $this->create_option();
-            try {
-                $response = json_decode(Requests::post($url, $this->header, $data, $option[0])->body);
-                if ($response->code == 0) {
-                    cache(sha1(json_encode($data)), $response);
-                    return $response;
-                } else {
-                    $this->proxy_pool->freeze_ip($option[1]);
-                }
-            } catch (\Exception $e) {
-                $this->proxy_pool->freeze_ip($option[1]);
-                Log::error($e->getMessage());
-            }
+            dump($option);
+//            try {
+//                $response = json_decode(Requests::post($url, $this->header, $data, $option[0])->body);
+//                if ($response->code == 0) {
+//                    cache(sha1(json_encode($data)), $response);
+//                    return $response;
+//                } else {
+//                    $this->proxy_pool->freeze_ip($option[1]);
+//                }
+//            } catch (\Exception $e) {
+//                $this->proxy_pool->freeze_ip($option[1]);
+//                Log::error($e->getMessage());
+//            }
         }
         throw new Exception('超过尝试次数');
     }

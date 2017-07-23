@@ -30,12 +30,13 @@ class Store
      * @param $product_img
      * @param $product_price
      */
-    public function addProduct ($product_name, $product_img, $product_price)
+    public function addProduct ($product_name, $product_img, $product_price, $product_url = '')
     {
         $this->products[] = [
             'product_name' => $product_name,
             'product_img' => $product_img,
-            'product_price' => $product_price
+            'product_price' => $product_price,
+            'product_url' => $product_url
         ];
     }
 

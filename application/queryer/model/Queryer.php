@@ -13,5 +13,10 @@ use think\Db;
 
 class Queryer
 {
-
+    public function decodeGBKurlEncode ()
+    {
+        $input = input('str');
+        $decoded = urldecode($input);
+        echo iconv('GB2312', 'UTF-8',$decoded);
+    }
 }

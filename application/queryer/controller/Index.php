@@ -9,9 +9,11 @@
 namespace app\queryer\controller;
 
 
+use app\queryer\model\proxy_pool;
+use app\queryer\model\Queryer;
 use think\Db;
 
-class Index
+class Index extends Queryer
 {
     public function suggest ()
     {
@@ -79,5 +81,9 @@ id = ? AND goods_status = 1", ["$product_id"]);
         } else {
             return json(["result" => "failed"]);
         }
+    }
+
+    public function ProxyPoolState () {
+        proxy_pool::get_proxy_pool_state();
     }
 }

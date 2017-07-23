@@ -10,7 +10,7 @@ namespace app\queryer\model;
 
 
 use app\SpiderSetting;
-use think\Cache;
+use think\Debug;
 
 class proxy_pool extends SpiderSetting
 {
@@ -20,8 +20,11 @@ class proxy_pool extends SpiderSetting
     function __construct ()
     {
         parent::__construct();
-        if (!Cache::has('proxy_pool') || !Cache::has('freeze_ip')) {
-            Cache::set('proxy_pool', $this->config['proxy_pool']);
+        if (!\cache('proxy_pool') || !cache('freeze_ip')){
+            $this->proxy_pool = $this->config['proxy_pool'];
+            $this->freeze_ip = [];
+            cache('proxy_pool', $this->proxy_pool);
+            cache('freeze_ip', []);
         }
     }
 
@@ -60,9 +63,24 @@ class proxy_pool extends SpiderSetting
      */
     public function freeze_ip ($key)
     {
-        $ip = $this->proxy_pool[$key];
-        array_splice($this->proxy_pool, $key, 1);
+        $ip = array_splice($this->proxy_pool, $key, 1)[0];
+        cache('proxy_pool', $this->proxy_pool);
         $this->freeze_ip[] = $ip;
         cache('freeze_ip', $this->freeze_ip);
+    }
+
+    /**
+     * 显示代理池状态
+     */
+
+    public static function get_proxy_pool_state ()
+    {
+        echo "正在使用的Ip: <br />";
+        Debug::dump(\cache('proxy_pool'));
+        echo "已经暂停使用的 Ip: <br />";
+        Debug::dump(\cache('freeze_ip'));
+        echo "<script>setTimeout(function() {
+                 window.location.reload()
+              }, 5000)</script>";
     }
 }
