@@ -1,10 +1,11 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Console from '@/components/Console'
+import Console from '@/components/Console/Console'
 import Search from '@/components/Search/Search'
 import SearchByName from '@/components/Search/SearchByName'
 import SearchById from '@/components/Search/SearchById'
-import Setting from '@/components/Setting'
+import Setting from '@/components/Setting/Setting'
+import Analyze from '@/components/Analyze/Analyze'
 Vue.use(Router)
 
 export default new Router({
@@ -50,6 +51,11 @@ export default new Router({
       path: '/Setting',
       name: 'Setting',
       component: Setting
+    },
+    {
+      path: '/Analyze',
+      name: 'Analyze',
+      component: Analyze
     }
   ]
 })

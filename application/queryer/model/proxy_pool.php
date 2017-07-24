@@ -48,9 +48,11 @@ class proxy_pool extends SpiderSetting
 
         $this->refresh_cache();
 
-        while (count($this->proxy_pool) < 10) {
+        while (count($this->proxy_pool) < 11) {
             $this->proxy_pool[] = array_shift($this->freeze_ip);
         }
+        cache('proxy_pool', $this->proxy_pool);
+        cache('freeze_ip', $this->freeze_ip);
 
         $key = random_int(0, count($this->proxy_pool) - 1);
 
@@ -75,12 +77,6 @@ class proxy_pool extends SpiderSetting
 
     public static function get_proxy_pool_state ()
     {
-        echo "正在使用的Ip: <br />";
-        Debug::dump(\cache('proxy_pool'));
-        echo "已经暂停使用的 Ip: <br />";
-        Debug::dump(\cache('freeze_ip'));
-        echo "<script>setTimeout(function() {
-                 window.location.reload()
-              }, 5000)</script>";
+        return count(cache('proxy_pool'));
     }
 }

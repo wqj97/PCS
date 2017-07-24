@@ -37,8 +37,8 @@
           :results="results"
       ></real-time-result>
     </el-row>
-    <el-row v-loading="loadStatePrevious" class="render-cell" >
-        <history-stat :history="previouslyResults" v-if="previouslyResults.length"></history-stat>
+    <el-row v-loading="loadStatePrevious" class="render-cell">
+      <history-stat :history="previouslyResults" v-if="previouslyResults.length"></history-stat>
     </el-row>
   </div>
 </template>
@@ -47,6 +47,7 @@
   import RealTimeResult from './RealTimeResult.vue'
   import historyStat from './historyStat.vue'
   import SearchLocalInfo from './SearchLocalInfo.vue'
+
   export default {
     name: 'SearchByName',
     components: {
@@ -63,7 +64,12 @@
           productName: '',
           city: ''
         },
-        results: [],
+        results: {
+          Jddj: [],
+          Tm: [],
+          Tb: [],
+          Sdg: []
+        },
         previouslyResults: [],
         localInfo: [],
         loadStateSearch: false,
@@ -84,7 +90,12 @@
       search (pushHistory) {
         this.loadStateSearch = true
         this.loadStatePrevious = true
-        this.results = []
+        this.results = {
+          Jddj: [],
+          Tm: [],
+          Tb: [],
+          Sdg: []
+        }
         this.localInfo = []
         this.previouslyResults = []
         if (typeof pushHistory === 'string') {
@@ -108,7 +119,14 @@
             return
           }
           data.body.forEach(val => {
-            this.results.push(val)
+            this.results.Jddj.push(val)
+          })
+        }).catch(data => {
+          this.loadStateSearch = false
+          this.$notify({
+            title: '搜索失败',
+            message: data.body.result,
+            type: 'error'
           })
         })
         // 搜索历史信息

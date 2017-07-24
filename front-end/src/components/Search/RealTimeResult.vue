@@ -4,7 +4,7 @@
       <div class="sub-title">
         实时数据 (每隔两小时采集一次)
       </div>
-      <transition name="el-fade-in-linear" v-if="results.length != 0">
+      <transition name="el-fade-in-linear">
         <el-col :span="24" class="search-result">
           <el-card>
             <div class="products">
@@ -24,13 +24,17 @@
                           </template>
                         </template>
                       </div>
-                      <span class="store-name" @click="openStoreInfo(store_info.row.store_info)">{{store_info.row.store_info.store_name}}</span>
+                      <span class="store-name" @click="openStoreInfo(store_info.row.store_info)">{{store_info.row
+                        .store_info.store_name}} ({{store_info.row.dataSource}})</span>
                     </el-tooltip>
                   </template>
                 </el-table-column>
                 <el-table-column
                     prop="product_name"
                     label="商品名">
+                  <template scope="scope">
+                    <a :href="scope.row.product_url" class="store-name">{{scope.row.product_name}}</a>
+                  </template>
                 </el-table-column>
                 <el-table-column
                     prop="product_price"
@@ -41,14 +45,9 @@
           </el-card>
         </el-col>
       </transition>
-      <el-col v-else>
-        <div class="sub-title">
-          暂时没有结果
-        </div>
-      </el-col>
     </el-card>
     <div class="block-control" @click="showMore" @mouseover="showMoreState = true"
-         @mouseout="showMoreState = false" v-if="ShowMore">
+         @mouseout="showMoreState = false" v-if="!opened">
       <i class="el-icon-caret-bottom"></i>
       <transition name="el-zoom-in-center">
         <span v-show="showMoreState">显示更多</span>
@@ -62,7 +61,7 @@
     props: {
       results: {
         required: true,
-        type: Array
+        type: Object
       }
     },
     data () {
@@ -107,17 +106,16 @@
       }
     },
     computed: {
-      ShowMore () {
-        return this.results.length !== 0 && !this.opened
-      },
       products () {
         let products = []
-        this.results.forEach(store => {
+        this.results.Jddj.forEach(store => {
           store.products.forEach(product => {
             products.push({
               product_name: product.product_name,
               product_price: product.product_price,
-              store_info: store
+              product_url: product.product_url,
+              store_info: store,
+              dataSource: '京东到家'
             })
           })
         })
@@ -197,13 +195,14 @@
     color: #1D8CE0;
     cursor: pointer;
   }
-  .store-image{
+
+  .store-image {
     position: absolute;
-    right:20px;
-    top:15px;
-    img{
-      width:100px;
-      box-shadow: 0 2px 3px rgba(0,0,0,0.2);
+    right: 20px;
+    top: 15px;
+    img {
+      width: 100px;
+      box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
       border-radius: 2px;
     }
   }

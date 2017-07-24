@@ -2,12 +2,12 @@
   <div id="app">
     <el-menu :default-active="homeIndex" class="home-menu" mode="horizontal">
       <el-menu-item index="0">
-        <router-link to="Console">控制中心</router-link>
+        <router-link to="/Console">控制台</router-link>
       </el-menu-item>
       <el-menu-item index="1">
         <router-link to="/Search/byName">价格查询</router-link>
       </el-menu-item>
-      <el-menu-item index="2">行情概览</el-menu-item>
+      <el-menu-item index="2"><router-link to="/Analyze">行情概览</router-link></el-menu-item>
       <el-menu-item index="3">活动监听</el-menu-item>
       <el-menu-item index="4"><router-link to="/Setting">系统设置</router-link></el-menu-item>
     </el-menu>
@@ -56,6 +56,11 @@
   .sub-title {
     margin: 10px 0;
     font-size: 14px;
+    color: #8492a6;
+  }
+  .main-title {
+    font-size: 18px;
+    margin: 10px 0;
     color: #8492a6;
   }
 

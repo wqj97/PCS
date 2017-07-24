@@ -56,13 +56,10 @@
       options (eachTime) {
         let prices = []
         let TimeLabel = []
-        let priceWithTimeLabel = []
         eachTime.forEach((val, key) => {
-          prices.push([key, val.product_price])
-          priceWithTimeLabel.push([
-            val.last_update_time, val.product_price
-          ])
-          TimeLabel.push(val.last_update_time)
+          console.log(val)
+          prices.push([key, Number(val.product_price)])
+          TimeLabel.push([new Date(val.last_update_time).toLocaleDateString()])
         })
         let myRegression = ecStat.regression('polynomial', prices, this.polynomial)
         return {
@@ -82,10 +79,9 @@
           tooltip: {
             trigger: 'axis',
             formatter (params) {
-              let date = new Date(params[0].data[0])
-              let value = params[1].data[1]
-              let rawValue = params[0].data[1]
-              return date.toLocaleString() + `<br />原始值: ${rawValue}, 平缓值: ${value}`
+              let price = params[0].data[1]
+              let predict = params[1].data[1]
+              return `采集价格: ${price}, 预测值: ${predict}`
             },
             axisPointer: {
               animation: false
@@ -94,38 +90,47 @@
           xAxis: {
             type: 'category',
             data: TimeLabel,
-            name: '时间',
-            scale: true,
-            position: 'bottom',
-            splitLine: {
-              show: false,
+            boundaryGap: false,
+            name: '采集时间',
+            nameTextStyle: {
+              color: '#fff'
+            },
+            axisLine: {
               lineStyle: {
-                color: '#fff',
-                type: 'solid'
+                color: '#fff'
               }
             }
           },
           yAxis: {
             type: 'value',
+            name: '价格',
             scale: true,
             splitLine: {
               show: false,
               lineStyle: {
                 type: 'solid'
               }
+            },
+            nameTextStyle: {
+              color: '#fff'
+            },
+            axisLine: {
+              lineStyle: {
+                color: '#fff'
+              }
             }
           },
           series: [{
-            name: 'scatter',
+            name: '实际价格',
             type: 'scatter',
             label: {
               emphasis: {
                 show: true
               }
             },
-            data: priceWithTimeLabel
+            data: prices
           }, {
-            name: 'line',
+            name: '预测价格',
             type: 'line',
             lineStyle: {
               normal: {
@@ -141,6 +146,8 @@
                   y2: 1,
                   colorStops: [{
                     offset: 0, color: '#ee5c2d' // 0% 处的颜色
+                  }, {
+                    offset: 0.5, color: '#fff' // 100% 处的颜色
                   }, {
                     offset: 1, color: '#2bcc30' // 100% 处的颜色
                   }],

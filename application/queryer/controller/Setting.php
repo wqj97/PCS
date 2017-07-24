@@ -19,7 +19,7 @@ class Setting extends SpiderSetting
         if (isset($this->config[$key])) {
             return json($this->config[$key]);
         } else {
-            return json_faile(403, 'param doesn\'t exist');
+            return json_fail(403, 'param doesn\'t exist');
         }
     }
 

@@ -20,7 +20,8 @@
     "topthink/framework": "^5.0",
     "rmccue/requests": ">=1.0",
     "topthink/think-helper": "^1.0",
-    "paquettg/php-html-parser": "^1.7.0"
+    "paquettg/php-html-parser": "^1.7.0",
+    "linfo/linfo": "^3.0.1"
   },
   "autoload": {
     "psr-4": {

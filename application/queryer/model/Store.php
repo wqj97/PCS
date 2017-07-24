@@ -29,6 +29,7 @@ class Store
      * @param $product_name
      * @param $product_img
      * @param $product_price
+     * @param string $product_url
      */
     public function addProduct ($product_name, $product_img, $product_price, $product_url = '')
     {

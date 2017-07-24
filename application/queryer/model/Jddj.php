@@ -8,6 +8,7 @@
 
 namespace app\queryer\model;
 
+use function PHPSTORM_META\type;
 use think\Db;
 use think\Debug;
 
@@ -34,9 +35,7 @@ class Jddj extends Spider
     {
         #优化关键词
         $product_name = $this->optimize_keyWords($product_name);
-
         $response = $this->make_request($product_name, $city);
-
         # 当更换代理次数超过上限的时候
         if ($response == false) return false;
 
@@ -45,9 +44,9 @@ class Jddj extends Spider
 
         # 持久化储存
         if ($product_id != 0) {
-            $this->save_into_db($result, $product_id, '', $city);
+            $this->save_into_db($result, $product_id, 'Jddj', '', $city);
         } else {
-            $this->save_into_db($result, 0, $product_name, $city);
+            $this->save_into_db($result, 0, 'Jddj', $product_name, $city);
         }
 
         return $result;
@@ -64,6 +63,9 @@ class Jddj extends Spider
         $stores = [];
 
         # 当京东到家给出提示词的时候, 返回空列表
+        if (is_string($response)) {
+            return json_fail(500, $response);
+        }
         if (!empty($response->result->promptWord)) return [null];
 
         $response = $response->result->storeSkuList;
@@ -73,11 +75,11 @@ class Jddj extends Spider
 
             $store = new Store($store_each_info->storeName, $store_each_info->logo, $city);
             $store->addExtraInfo('联系方式', $store_each_info->phone);
-            $store->addExtraInfo('开关门时间', $store_each_info->serviceTimes[0]->startTime.' - '
-                .$store_each_info->serviceTimes[0]->endTime);
+            $store->addExtraInfo('开关门时间', $store_each_info->serviceTimes[0]->startTime . ' - '
+                . $store_each_info->serviceTimes[0]->endTime);
 
             foreach ($storeInfo->skuList as $item) {
-                $product_url = $this->config['jddj']->baseUrl."#storeHome/skuId:{$item->skuId}/storeId:{$storeInfo->storeId}/orgCode:{$storeInfo->orgCode}/fromAnchor:true/promotionType:/activityId:/LID:1";
+                $product_url = $this->config['Jddj']->baseUrl . "#storeHome/skuId:{$item->skuId}/storeId:{$store_each_info->storeId}/orgCode:{$store_each_info->orgCode}/fromAnchor:true/promotionType:/activityId:/LID:1";
                 $store->addProduct($item->skuName, $item->imgUrl, $item->realTimePrice, $product_url);
             }
 
@@ -99,7 +101,7 @@ class Jddj extends Spider
      */
     protected function make_request ($product_name = '', $city)
     {
-        $position = $this->getPosition($city,'Jddj');
+        $position = $this->getPosition($city);
 
         $body = [
             "longitude" => $position[0],
@@ -115,13 +117,13 @@ class Jddj extends Spider
             "functionId" => $this->config["Jddj"]->functionId,
             "lng" => $position[0],
             "lat" => $position[1],
-            "city_id" => $position[2],
+            "city_id" => $position[2][0],
             "appVersion" => $this->config["Jddj"]->appVersion,
             "appName" => $this->config["Jddj"]->appName,
             "body" => json_encode($body)
         ];
 
-        return $this->request($data, $this->config['Jddj']->url);
+        return $this->request($data, $this->config['Jddj']->url, '$response->code == 0');
 
     }
 }

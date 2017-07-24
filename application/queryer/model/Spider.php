@@ -33,23 +33,9 @@ class Spider extends SpiderSetting
      * @param string $city 城市名
      * @return array 1.经度 2.纬度 3.城市Id
      */
-    protected function getPosition ($city = '深圳', $type)
+    protected function getPosition ($city = '深圳')
     {
-        switch ($type) {
-            case 'Jddj':
-                $type = 0;
-                break;
-            case 'Tm':
-                $type = 1;
-                break;
-            case 'Tb':
-                $type = 2;
-                break;
-            case 'Sdg':
-                $type = 3;
-                break;
-        }
-        return $this->config['city']->$city[$type];
+        return $this->config['city']->$city;
     }
 
     /**
@@ -72,9 +58,11 @@ class Spider extends SpiderSetting
      * 将爬取的结果存到数据库
      * @param $result array 爬取结果
      * @param $id int 本地商品Id
+     * @param $type string 查询类型
      * @param $keyWord string 关键词
+     * @param $city
      */
-    protected function save_into_db ($result, $id = 0, $keyWord = '', $city)
+    protected function save_into_db ($result, $id = 0, $type, $keyWord = '', $city)
     {
         $encoded = json_encode($result);
         $from_id = $id != 0;
@@ -94,11 +82,30 @@ ORDER BY P_last_update DESC LIMIT 1",
         if ($last_update_time + $this->config['auto_update_frequency'] > time()) {
             return;
         }
+
+        switch ($type) {
+            case 'Jddj':
+                $type = 'P_Jddj_info';
+                break;
+            case 'Tm':
+                $type = 'P_Tm_info';
+                break;
+            case 'Tb':
+                $type = 'P_Tb_info';
+                break;
+            case 'Sdg':
+                $type = 'P_Sdg_info';
+                break;
+            case 'Tbk':
+                $type = 'P_Tm_info';
+                break;
+        }
+
         if ($from_id) {
-            Db::execute("INSERT INTO `product_comparison` (P_Id, P_Jddj_info,P_city) VALUES (?,?,?)", [$id,
+            Db::execute("INSERT INTO `product_comparison` (P_Id,{$type},P_city) VALUES (?,?,?)", [$id,
                 $encoded, $city]);
         } else {
-            Db::execute("INSERT INTO `product_comparison` (P_keyWord, P_Jddj_info,P_city) VALUES (?,?,?)", [$keyWord,
+            Db::execute("INSERT INTO `product_comparison` (P_keyWord,{$type},P_city) VALUES (?,?,?)", [$keyWord,
                 $encoded, $city]);
         }
     }
@@ -107,31 +114,31 @@ ORDER BY P_last_update DESC LIMIT 1",
      * 发送请求
      * @param $data mixed post 内容
      * @param $url string post url
+     * @param $cordition_str string 判断请求成功的表达式: $response->code == 0;
      * @return mixed
-     * @throws Exception 当所有代理以及失效的时候, 抛出异常, 终止程序
      */
-    protected function request ($data, $url)
+    protected function request ($data, $url, $cordition_str)
     {
         if ($cache = cache(sha1(json_encode($data)))) {
             return $cache;
         }
+        $cordition_str = "return {$cordition_str};";
         for ($i = 0; $i < $this->config['retry_times']; $i++) {
             $option = $this->create_option();
-            dump($option);
-//            try {
-//                $response = json_decode(Requests::post($url, $this->header, $data, $option[0])->body);
-//                if ($response->code == 0) {
-//                    cache(sha1(json_encode($data)), $response);
-//                    return $response;
-//                } else {
-//                    $this->proxy_pool->freeze_ip($option[1]);
-//                }
-//            } catch (\Exception $e) {
-//                $this->proxy_pool->freeze_ip($option[1]);
-//                Log::error($e->getMessage());
-//            }
+            try {
+                $response = json_decode(Requests::post($url, $this->header, $data, $option[0])->body);
+                if (eval($cordition_str)) {
+                    cache(sha1(json_encode($data)), $response);
+                    return $response;
+                } else {
+                    $this->proxy_pool->freeze_ip($option[1]);
+                }
+            } catch (\Exception $e) {
+                $this->proxy_pool->freeze_ip($option[1]);
+                Log::error($e->getMessage());
+            }
         }
-        throw new Exception('超过尝试次数');
+        return false;
     }
 
     /**

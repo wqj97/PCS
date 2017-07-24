@@ -32,6 +32,16 @@
         </el-card>
       </el-col>
     </el-row>
+    <el-row>
+      <el-col :span="9" v-if="autoUpdate">
+        <el-card class="box-card">
+          <span class="sub-title">
+            爬虫出错重试上线次数 (次数越大, 延迟可能越久, 也越有可能查询到结果):
+          </span>
+          <el-input-number v-model="retryTimes" :min="1"></el-input-number>
+        </el-card>
+      </el-col>
+    </el-row>
     <el-row type="flex" justify="space-between">
       <el-col>
         <el-card class="box-card" style="display: inline-block">
@@ -216,6 +226,7 @@
         autoUpdateFrequency: 2,
         openedSpider: [],
         proxyTestPercentage: 0,
+        retryTimes: 10,
         proxyDelay: 0.1,
         testingBlock: false,
         Jddj: {
@@ -300,6 +311,11 @@
         this.proxyDelay = data.body.proxy_sleep
         // 启动的爬虫
         this.openedSpider = data.body.opened_spider
+        // 重试次数
+        this.retryTimes = data.body.retry_times
+        this.$watch('retryTimes', this.saveRetryTimes, {
+          deep: true
+        })
         // 京东到家
         this.Jddj.option = JSON.stringify(data.body.Jddj, null, 8)
         // 自动更新
@@ -338,6 +354,12 @@
             })
           }
         })
+      },
+      saveRetryTimes () {
+        clearTimeout(this.timeout)
+        this.timeout = setTimeout(() => {
+          this.saveSetting('retry_times', this.retryTimes)
+        }, 500)
       },
       saveCities () {
         let setting = {}

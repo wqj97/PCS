@@ -34,6 +34,13 @@ module.exports = {
         pathRewrite: {
           '^/queryer': '/queryer'
         }
+      },
+      '/console': {
+        target: 'http://localhost',
+        changeOrigin: true,
+        pathRewrite: {
+          '^/console': '/console'
+        }
       }
     },
     // CSS Sourcemaps off by default because relative paths are "buggy"

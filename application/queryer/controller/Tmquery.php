@@ -2,21 +2,22 @@
 /**
  * Created by PhpStorm.
  * User: wanqianjun
- * Date: 2017/7/13
- * Time: 10:31
+ * Date: 2017/7/24
+ * Time: 10:32
  */
 
 namespace app\queryer\controller;
 
-use app\queryer\model\Jddj;
+
 use app\queryer\model\Queryer;
+use app\queryer\model\Tm;
 use think\Db;
 
-class Jdquery extends Queryer
+class Tmquery extends Queryer
 {
-    public function Search ($product_name = '', $product_id = 0, $city = '深圳')
+    public function Search ($product_name = '', $product_id = 0)
     {
-        $requester = new Jddj();
+        $requester = new Tm();
         $city = input('post.city', '深圳');
         if (empty($product_name)) {
             $product_name = input('post.productName', '');
@@ -37,7 +38,7 @@ class Jdquery extends Queryer
         if ($result = $requester->search($product_name, $product_id, $city)) {
             return json($result);
         } else {
-            return json_fail('500', '查询失败次数超过上线');
+            return json_fail('500', '查询次数超过上线');
         }
     }
 }

@@ -46,6 +46,7 @@
   import SearchLocalInfo from './SearchLocalInfo.vue'
   import RealTimeResult from './RealTimeResult.vue'
   import historyStat from './historyStat.vue'
+
   export default {
     name: 'SeachById',
     components: {
@@ -63,7 +64,12 @@
           productName: '',
           city: ''
         },
-        results: [],
+        results: {
+          Jddj: [],
+          Tm: [],
+          Tb: [],
+          Sdg: []
+        },
         previouslyResults: [],
         localInfo: [],
         loadStateSearch: false,
@@ -111,7 +117,12 @@
       search (productId) {
         this.loadStateSearch = true
         this.loadStatePrevious = true
-        this.results = []
+        this.results = {
+          Jddj: [],
+          Tm: [],
+          Tb: [],
+          Sdg: []
+        }
         this.localInfo = []
         this.previouslyResults = []
         // 搜索实时信息
@@ -130,7 +141,7 @@
             return
           }
           data.body.forEach(val => {
-            this.results.push(val)
+            this.results.Jddj.push(val)
           })
         })
         // 搜索历史信息

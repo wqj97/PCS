@@ -10,7 +10,7 @@
 // +----------------------------------------------------------------------
 
 // 应用公共文件
-function json_faile ($code = 403, $msg = "缺少参数")
+function json_fail ($code = 403, $msg = "缺少参数")
 {
     return json(["result" => $msg], $code);
 }
