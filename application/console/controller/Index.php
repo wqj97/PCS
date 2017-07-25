@@ -18,7 +18,7 @@ class Index
     {
         $linfo = new Linfo();
         $parser = $linfo->getParser();
-        $memory = round(memory_get_usage() / memory_get_peak_usage(),2);
+        $memory = round(memory_get_usage() / memory_get_peak_usage(),4);
         return json(["proxyPoolStatus" => proxy_pool::get_proxy_pool_state(), "memory" => $memory, "cpu" =>
             (float)$parser->getLoad()['5min']]);
     }

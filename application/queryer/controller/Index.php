@@ -86,4 +86,5 @@ id = ? AND goods_status = 1", ["$product_id"]);
     public function ProxyPoolState () {
         proxy_pool::get_proxy_pool_state();
     }
+
 }

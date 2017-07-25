@@ -44,16 +44,20 @@
         cpu: [],
         memory: [],
         proxyPool: [],
-        timeLabel: []
+        timeLabel: [],
+        interVal: 0
       }
     },
     mounted () {
-      this.$store.commit('updateHomeIndex', {homeIndex: '0'})
+      this.$store.commit('updateHomeIndex', {homeIndex: '2'})
       this.getSystemStatus()
       this.getSystemStatus()
-      setInterval(() => {
+      this.interVal = setInterval(() => {
         this.getSystemStatus()
       }, 5000)
+    },
+    beforeDestroy () {
+      clearInterval(this.interVal)
     },
     methods: {
       getSystemStatus () {

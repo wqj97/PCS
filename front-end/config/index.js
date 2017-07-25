@@ -41,6 +41,13 @@ module.exports = {
         pathRewrite: {
           '^/console': '/console'
         }
+      },
+      '/analyze': {
+        target: 'http://localhost',
+        changeOrigin: true,
+        pathRewrite: {
+          '^/analyze': '/analyze'
+        }
       }
     },
     // CSS Sourcemaps off by default because relative paths are "buggy"

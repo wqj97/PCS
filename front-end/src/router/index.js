@@ -13,7 +13,7 @@ export default new Router({
     {
       path: '/',
       name: 'Home',
-      component: Console
+      component: Analyze
     },
     {
       path: '/Console',
