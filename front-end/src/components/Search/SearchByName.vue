@@ -68,6 +68,7 @@
           Jddj: [],
           Tm: [],
           Tb: [],
+          Tbk: [],
           Sdg: []
         },
         previouslyResults: [],
@@ -94,6 +95,7 @@
           Jddj: [],
           Tm: [],
           Tb: [],
+          Tbk: [],
           Sdg: []
         }
         this.localInfo = []
@@ -104,14 +106,16 @@
         this.historyIn = this.form.productName
         let city = this.form.city
         // 搜索实时信息
+        // 京东到家
         this.$http.post(`/queryer/Jdquery/search`, {
           productName: this.form.productName,
-          city: city
+          city: city,
+          type: 'Jddj'
         }).then(data => {
           this.loadStateSearch = false
           this.$notify({
             title: '搜索状态',
-            message: '搜索成功',
+            message: '京东到家搜索成功',
             type: 'success'
           })
           if (data.body[0] === null) {
@@ -120,6 +124,34 @@
           }
           data.body.forEach(val => {
             this.results.Jddj.push(val)
+          })
+        }).catch(data => {
+          this.loadStateSearch = false
+          this.$notify({
+            title: '搜索失败',
+            message: data.body.result,
+            type: 'error'
+          })
+        })
+        // 淘宝客
+        this.$http.post(`/queryer/Tbkquery/search`, {
+          productName: this.form.productName,
+          city: city,
+          type: 'Tbk'
+        }).then(data => {
+          this.loadStateSearch = false
+          this.$notify({
+            title: '搜索状态',
+            message: '淘宝客搜索成功',
+            type: 'success'
+          })
+          if (data.body[0] === null) {
+            this.result = []
+            return
+          }
+          data.body.forEach(val => {
+            // 确保淘宝客在最先
+            this.results.Tbk.unshift(val)
           })
         }).catch(data => {
           this.loadStateSearch = false

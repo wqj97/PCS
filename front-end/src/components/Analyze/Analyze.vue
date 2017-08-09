@@ -89,8 +89,15 @@
               trigger="hover"
               content="竞争力计算公式: 我们有的商品对方没有+3分, 同款商品我们价格有优势+2分, 反之-2分">
           </el-popover>
-          总体竞争力 <i class="el-icon-information" v-popover:popover1></i>
+          总体分析 <i class="el-icon-information" v-popover:popover1></i>
         </div>
+        <el-row>
+          <el-col v-for="(analyze, index) in analyzeDataList" :key="index" :span="8">
+            <el-card class="box-card analyze-result">
+              <router-link :to="{name: 'AnalyzeViewer', params: {Id: analyze.Id}}"><span>{{analyze.A_coverage}}条结果</span>{{analyze.A_date}}</router-link>
+            </el-card>
+          </el-col>
+        </el-row>
       </el-card>
     </el-row>
     <el-row>
@@ -158,7 +165,8 @@
           lastAnalyzeDate: '',
           coverageCount: 0,
           timeCost: 0
-        }
+        },
+        analyzeDataList: []
       }
     },
     mounted () {
@@ -170,6 +178,7 @@
         this.lastAnalyzeData.lastAnalyzeDate = new Date(analyzeInfo.A_date).toLocaleString()
         this.lastAnalyzeData.timeCost = `${Math.floor(analyzeInfo.A_time_cost / 60)}分${parseInt(analyzeInfo.A_time_cost % 60)}秒`
         this.lastAnalyzeData.coverageCount = analyzeInfo.A_coverage
+        this.analyzeDataList = data.analyzeDataList
       })
     },
     computed: {
@@ -206,6 +215,15 @@
   .badge-minus {
     .el-badge__content {
       background-color: #47c12b !important;
+    }
+  }
+  .analyze-result{
+    cursor: pointer;
+    color: #1D8CE0;
+    div{
+      display: flex;
+      justify-content: space-between;
+      align-content:center;
     }
   }
 </style>

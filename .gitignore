@@ -2,3 +2,10 @@
 composer.lock
 *.log
 thinkphp
+.DS_Store
+application/.DS_Store
+application/queryer/.DS_Store
+extend/
+front-end/src/components/data/
+home/
+node_modules/

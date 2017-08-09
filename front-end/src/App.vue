@@ -55,6 +55,7 @@
 
   .el-fade-in-leave-active {
     position: absolute;
+    width:100%;
   }
 
   .sub-title {

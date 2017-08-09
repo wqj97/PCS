@@ -28,16 +28,11 @@ class Index extends Queryer
     {
         $product_name = input('get.productName', '');
         $product_id = input('get.productId', 0);
-        $page = input('get.page', 1);
-        $num_result = input('get.num_result', 6);
         $city = input('get.city', '深圳');
-        $start = ($page - 1) * $num_result;
         if ($product_name != '') {
-            return Db::query("SELECT P_last_update,goods_name,P_keyWord,P_Jddj_info FROM comparision WHERE P_city = ? AND comparision.P_keyWord LIKE ? LIMIT ?,?", [$city, "%{$product_name}%",
-                $start, $num_result]);
+            return Db::query("SELECT P_last_update,goods_name,P_keyWord,P_Jddj_info, P_Tbk_info FROM product_comparison LEFT JOIN v_goods ON v_goods.P_Id = product_comparison.P_Id WHERE P_city = ? AND goods_name LIKE ? GROUP BY P_last_update", [$city, "%{$product_name}%"]);
         } else {
-            return Db::query("SELECT P_last_update,goods_name,P_keyWord,P_Jddj_info FROM comparision WHERE P_city = ? AND P_Id = ? LIMIT ?,?", [$city, $product_id,
-                $start, $num_result]);
+            return Db::query("SELECT P_last_update,goods_name,P_keyWord,P_Jddj_info, P_Tbk_info FROM product_comparison LEFT JOIN v_goods ON v_goods.P_Id = product_comparison.P_Id WHERE P_city = ?  GROUP BY P_last_update", [$city, $product_id]);
         }
     }
 
@@ -83,7 +78,8 @@ id = ? AND goods_status = 1", ["$product_id"]);
         }
     }
 
-    public function ProxyPoolState () {
+    public function ProxyPoolState ()
+    {
         proxy_pool::get_proxy_pool_state();
     }
 

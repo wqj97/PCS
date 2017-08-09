@@ -4,16 +4,16 @@ var path = require('path')
 module.exports = {
   build: {
     env: require('./prod.env'),
-    index: path.resolve(__dirname, '../dist/index.html'),
-    assetsRoot: path.resolve(__dirname, '../dist'),
+    index: path.resolve(__dirname, '../../home/index.html'),
+    assetsRoot: path.resolve(__dirname, '../../home'),
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
-    productionSourceMap: true,
+    productionSourceMap: false,
     // Gzip off by default as many popular static hosts such as
     // Surge or Netlify already gzip all static assets for you.
     // Before setting to `true`, make sure to:
     // npm install --save-dev compression-webpack-plugin
-    productionGzip: false,
+    productionGzip: true,
     productionGzipExtensions: ['js', 'css'],
     // Run the build command with an extra argument to
     // View the bundle analyzer report after build finishes:
@@ -47,6 +47,13 @@ module.exports = {
         changeOrigin: true,
         pathRewrite: {
           '^/analyze': '/analyze'
+        }
+      },
+      '/static': {
+        target: 'http://localhost',
+        changeOrigin: true,
+        pathRewrite: {
+          '^/static': '/static'
         }
       }
     },

@@ -37,7 +37,7 @@ class Tm extends Spider
         # 当更换代理次数超过上限的时候
         if ($response == false) return false;
 
-        # 讲结果转化为商店的形式
+        # 讲结果转化为商店类
         $result = $this->parse($response, $city);
 
         # 持久化储存

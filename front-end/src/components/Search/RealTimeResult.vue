@@ -6,43 +6,41 @@
       </div>
       <transition name="el-fade-in-linear">
         <el-col :span="24" class="search-result">
-          <el-card>
-            <div class="products">
-              <el-table
-                  :data="products"
-                  style="width: 100%">
-                <el-table-column
-                    label="店名"
-                    prop="store_info">
-                  <template scope="store_info">
-                    <el-tooltip placement="right">
-                      <div slot="content">所在城市: {{store_info.row.store_info.city}}
-                        <template v-for="extraInfo in store_info.row.store_info.extraInfo">
-                          <br/>
-                          <template v-for="(val, key) in extraInfo">
-                            {{key}}: {{val}}
-                          </template>
+          <div class="products">
+            <el-table
+                :data="products"
+                style="width: 100%">
+              <el-table-column
+                  label="店名"
+                  prop="store_info">
+                <template scope="store_info">
+                  <el-tooltip placement="right">
+                    <div slot="content">所在城市: {{store_info.row.store_info.city}}
+                      <template v-for="extraInfo in store_info.row.store_info.extraInfo">
+                        <br/>
+                        <template v-for="(val, key) in extraInfo">
+                          {{key}}: {{val}}
                         </template>
-                      </div>
-                      <span class="store-name" @click="openStoreInfo(store_info.row.store_info)">{{store_info.row
+                      </template>
+                    </div>
+                    <span class="store-name" @click="openStoreInfo(store_info.row.store_info)">{{store_info.row
                         .store_info.store_name}} ({{store_info.row.dataSource}})</span>
-                    </el-tooltip>
-                  </template>
-                </el-table-column>
-                <el-table-column
-                    prop="product_name"
-                    label="商品名">
-                  <template scope="scope">
-                    <a :href="scope.row.product_url" class="store-name">{{scope.row.product_name}}</a>
-                  </template>
-                </el-table-column>
-                <el-table-column
-                    prop="product_price"
-                    label="商品价格 (元)">
-                </el-table-column>
-              </el-table>
-            </div>
-          </el-card>
+                  </el-tooltip>
+                </template>
+              </el-table-column>
+              <el-table-column
+                  prop="product_name"
+                  label="商品名">
+                <template scope="scope">
+                  <a :href="scope.row.product_url" class="store-name">{{scope.row.product_name}}</a>
+                </template>
+              </el-table-column>
+              <el-table-column
+                  prop="product_price"
+                  label="商品价格 (元)">
+              </el-table-column>
+            </el-table>
+          </div>
         </el-col>
       </transition>
     </el-card>
@@ -116,6 +114,17 @@
               product_url: product.product_url,
               store_info: store,
               dataSource: '京东到家'
+            })
+          })
+        })
+        this.results.Tbk.forEach(store => {
+          store.products.forEach(product => {
+            products.unshift({
+              product_name: product.product_name,
+              product_price: product.product_price,
+              product_url: product.product_url,
+              store_info: store,
+              dataSource: '淘宝客'
             })
           })
         })

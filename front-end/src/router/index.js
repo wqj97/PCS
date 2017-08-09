@@ -1,10 +1,5 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Console from '@/components/Console/Console'
-import Search from '@/components/Search/Search'
-import SearchByName from '@/components/Search/SearchByName'
-import SearchById from '@/components/Search/SearchById'
-import Setting from '@/components/Setting/Setting'
 import Analyze from '@/components/Analyze/Analyze'
 Vue.use(Router)
 
@@ -16,46 +11,51 @@ export default new Router({
       component: Analyze
     },
     {
+      path: '/Analyze',
+      name: 'Analyze',
+      component: Analyze
+    },
+    {
+      path: '/Analyze/:Id',
+      name: 'AnalyzeViewer',
+      component: () => import('@/components/Analyze/AnalyzeViewer')
+    },
+    {
       path: '/Console',
       name: 'Console',
-      component: Console
+      component: () => import('@/components/Console/Console')
     },
     {
       path: '/Search',
       name: 'Search',
-      component: Search,
+      component: () => import('@/components/Search/Search'),
       children: [
         {
           path: 'byName',
           name: 'SearchByName',
-          component: SearchByName
+          component: () => import('@/components/Search/SearchByName')
         },
         {
           path: 'byName/:name',
           name: 'SearchByNameWithParam',
-          component: SearchByName
+          component: () => import('@/components/Search/SearchByName')
         },
         {
           path: 'byId',
           name: 'SearchByIdWithParam',
-          component: SearchById
+          component: () => import('@/components/Search/SearchById')
         },
         {
           path: 'byId/:id',
           name: 'SearchById',
-          component: SearchById
+          component: () => import('@/components/Search/SearchById')
         }
       ]
     },
     {
       path: '/Setting',
       name: 'Setting',
-      component: Setting
-    },
-    {
-      path: '/Analyze',
-      name: 'Analyze',
-      component: Analyze
+      component: () => import('@/components/Setting/Setting')
     }
   ]
 })
